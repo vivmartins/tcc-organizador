@@ -8,6 +8,7 @@ import { Biblioteca } from './ui/paginas/biblioteca/Biblioteca.tsx';
 import { FormularioFonte } from './ui/paginas/biblioteca/FormularioFonte.tsx';
 import { PaginaFonte } from './ui/paginas/biblioteca/PaginaFonte.tsx';
 import { Dados } from './ui/paginas/Dados.tsx';
+import { Fichamentos } from './ui/paginas/fichamentos/Fichamentos.tsx';
 import { EmBreve } from './ui/paginas/EmBreve.tsx';
 
 function Rotas() {
@@ -22,7 +23,7 @@ function Rotas() {
         <Route path="biblioteca/nova" element={<FormularioFonte key="nova" />} />
         <Route path="biblioteca/:id" element={<PaginaFonte />} />
         <Route path="biblioteca/:id/editar" element={<FormularioFonte key="editar" />} />
-        <Route path="fichamentos" element={<EmBreve titulo="Fichamentos" descricao="Aqui você vai registrar citações diretas e indiretas, resumos e ideias de cada fonte, com página e capítulo do TCC." />} />
+        <Route path="fichamentos" element={<Fichamentos />} />
         <Route path="planejamento" element={<EmBreve titulo="Planejamento" descricao="Etapas, tarefas, prazos e cronograma do seu TCC, com progresso calculado pelas tarefas concluídas." />} />
         <Route path="orientacoes" element={<EmBreve titulo="Orientações" descricao="Registro das orientações do seu orientador, com prazos, status e vínculo com tarefas." />} />
         <Route path="conferencia" element={<EmBreve titulo="Conferência final" descricao="Checklist editável para preparar a entrega do TCC." />} />

@@ -134,3 +134,22 @@ describe('backup', () => {
     expect(() => lerArquivoDeBackup(JSON.stringify({ formato: 'tcc-organizador-backup', versao: 99, dados: {} }))).toThrow('versão mais nova');
   });
 });
+
+describe('fichamentos', () => {
+  test('cria no mesmo projeto da fonte, preserva o trecho original e valida', async () => {
+    const { criarFicha, atualizarFicha } = await import('./fichamentos.ts');
+    const p = await criarProjeto({ nome: 'TCC' });
+    const f = await criarFonte(p.id, fonteBase());
+    const trecho = '  Texto   com espaços\noriginais ';
+    const ficha = await criarFicha(f.id, { tipo: 'citacao_direta', trechoOriginal: trecho, pagina: ' 15 ', tagIds: [] });
+    const salva = (await db.fichamentos.get(ficha.id))!;
+    expect(salva.trechoOriginal).toBe(trecho);
+    expect(salva.pagina).toBe('15');
+    expect(salva.projetoId).toBe(p.id);
+    await expect(criarFicha(f.id, { tipo: 'citacao_direta', parafrase: 'x', tagIds: [] })).rejects.toBeInstanceOf(ErroDeValidacao);
+    await atualizarFicha(ficha.id, { tipo: 'citacao_indireta', parafrase: 'Nova', tagIds: [] });
+    const editada = (await db.fichamentos.get(ficha.id))!;
+    expect(editada.trechoOriginal).toBeUndefined();
+    expect(editada.parafrase).toBe('Nova');
+  });
+});

@@ -64,13 +64,14 @@ export function VisaoGeral() {
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Indicador rotulo="Fontes" valor={String(fontes.length)} detalhe={fontes.length ? plural(lidas, 'lida ou revisada', 'lidas ou revisadas') : undefined} icone={<Library size={15} />} para="/biblioteca" />
-        <Indicador rotulo="Fichamentos" valor={String(fichamentos.length)} icone={<NotebookPen size={15} />} />
+        <Indicador rotulo="Fichamentos" valor={String(fichamentos.length)} icone={<NotebookPen size={15} />} para="/fichamentos" />
         <Indicador rotulo="Tarefas em andamento" valor={String(emAndamento)} icone={<Loader size={15} />} />
         <Indicador rotulo="Prazo de entrega" valor={prazoValor} detalhe={prazoDetalhe} icone={<CalendarClock size={15} />} para={projeto.prazoFinal ? undefined : '/projeto'} />
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
         <BotaoLink para="/biblioteca/nova" variante="primario"><BookPlus size={16} /> Cadastrar fonte</BotaoLink>
+        {fontes.length > 0 && <BotaoLink para="/fichamentos"><NotebookPen size={16} /> Adicionar anotação</BotaoLink>}
         {fontes.length > 0 && <BotaoLink para="/biblioteca?referencias=1"><Quote size={16} /> Gerar referências</BotaoLink>}
       </div>
 
@@ -116,7 +117,7 @@ export function VisaoGeral() {
           </Cartao>
 
           <Cartao>
-            <div className="border-b border-borda px-4 py-3"><h2 className="text-sm font-semibold">Fichamentos recentes</h2></div>
+            <div className="flex items-center justify-between border-b border-borda px-4 py-3"><h2 className="text-sm font-semibold">Fichamentos recentes</h2><Link to="/fichamentos" className="flex items-center gap-1 text-xs text-acao-700 hover:underline">Ver todos <ArrowRight size={13} /></Link></div>
             {fichasRecentes.length === 0 ? (
               <p className="px-4 py-6 text-sm text-cinza-500">Nenhum fichamento registrado ainda.</p>
             ) : (

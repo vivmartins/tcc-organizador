@@ -13,6 +13,7 @@ import { Confirmacao, useAvisos } from '../../componentes/dialogos.tsx';
 import { copiar, dataCurta, plural } from '../../util.ts';
 import { ORDEM_STATUS, ROTULO_STATUS_LEITURA } from './rotulos.ts';
 import { formatarDataAcesso } from '../../../domain/abnt/referencia.ts';
+import { ListaDeFichas } from '../fichamentos/Fichamentos.tsx';
 
 type Aba = 'dados' | 'resumo' | 'fichamentos' | 'referencia';
 const ABAS: { id: Aba; rotulo: string }[] = [
@@ -296,12 +297,7 @@ export function PaginaFonte() {
         {aba === 'referencia' && <AbaReferencia fonte={fonte} etAl={projeto.etAlNasReferencias} />}
         {aba === 'dados' && <AbaDados fonte={fonte} nomesTags={nomesTags} />}
         {aba === 'resumo' && <AbaResumo key={fonte.id} fonte={fonte} />}
-        {aba === 'fichamentos' && (
-          <Cartao className="p-6 text-sm text-cinza-600">
-            {fichas > 0 ? `${plural(fichas, 'fichamento registrado', 'fichamentos registrados')}. ` : ''}
-            O registro de fichamentos e citações chega na próxima etapa do desenvolvimento.
-          </Cartao>
-        )}
+        {aba === 'fichamentos' && <ListaDeFichas fonteId={fonte.id} />}
       </div>
 
       <Confirmacao

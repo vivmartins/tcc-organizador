@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ArrowLeft, ArrowDown, ArrowUp, Plus, Trash2, X, Info } from 'lucide-react';
+import { ArrowLeft, ArrowDown, ArrowUp, Plus, Trash2, Info } from 'lucide-react';
 import { db, type Fonte, type StatusLeitura } from '../../../data/db.ts';
 import { criarFonte, atualizarFonte, verificarDuplicatas, ErroDeValidacao, type DadosFonte } from '../../../data/fontes.ts';
 import { obterOuCriarTag } from '../../../data/tags.ts';
@@ -9,6 +9,7 @@ import { ROTULO_TIPO, type Autor, type CampoBibliografico, type TipoPublicacao }
 import { useProjetoObrigatorio } from '../../projetoAtivo.tsx';
 import { AreaTexto, Botao, BotaoLink, CabecalhoPagina, Campo, Cartao, Entrada, Selecao, Selo, cx } from '../../componentes/base.tsx';
 import { Confirmacao, useAvisos } from '../../componentes/dialogos.tsx';
+import { EditorTags } from '../../componentes/EditorTags.tsx';
 import { hojeIso } from '../../util.ts';
 import { ORDEM_STATUS, ROTULO_STATUS_LEITURA, autoresCurtos } from './rotulos.ts';
 
@@ -156,46 +157,6 @@ function EditorAutores({ titulo, autores, aoMudar, erros, prefixoErro, dica }: {
         <Botao tamanho="p" variante="fantasma" onClick={() => aoMudar([...autores, { tipo: 'pessoa', sobrenome: '', prenomes: '' }])} className="-ml-2.5"><Plus size={14} /> Adicionar</Botao>
       </div>
     </fieldset>
-  );
-}
-
-function EditorTags({ tags, aoMudar, sugestoes }: { tags: string[]; aoMudar: (t: string[]) => void; sugestoes: string[] }) {
-  const [texto, setTexto] = useState('');
-  const adicionar = () => {
-    const t = texto.replace(/\s+/g, ' ').trim();
-    if (t && !tags.some((x) => x.toLowerCase() === t.toLowerCase())) aoMudar([...tags, t]);
-    setTexto('');
-  };
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="flex gap-2">
-        <Entrada
-          id="tags"
-          list="sugestoes-tags"
-          placeholder="Digite e tecle Enter (ex.: Humanização)"
-          value={texto}
-          onChange={(e) => setTexto(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ',') {
-              e.preventDefault();
-              adicionar();
-            }
-          }}
-        />
-        <Botao onClick={adicionar} disabled={!texto.trim()}>Adicionar</Botao>
-        <datalist id="sugestoes-tags">{sugestoes.filter((s) => !tags.includes(s)).map((s) => <option key={s} value={s} />)}</datalist>
-      </div>
-      {tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {tags.map((t) => (
-            <span key={t} className="inline-flex items-center gap-1 rounded bg-cinza-100 py-0.5 pl-2 pr-1 text-xs font-medium text-marinho-700">
-              {t}
-              <button type="button" onClick={() => aoMudar(tags.filter((x) => x !== t))} className="rounded p-0.5 hover:bg-borda-forte/50" aria-label={`Remover ${t}`}><X size={12} /></button>
-            </span>
-          ))}
-        </div>
-      )}
-    </div>
   );
 }
 
