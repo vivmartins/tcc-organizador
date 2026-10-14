@@ -7,6 +7,7 @@ import { AjudaSecao } from '../ajuda/AjudaSecao.tsx';
 import { useProjetoObrigatorio } from '../projetoAtivo.tsx';
 import { Cartao, CabecalhoPagina, BotaoLink, Selo, cx } from '../componentes/base.tsx';
 import { dataCurta, diasAte, hojeIso, plural } from '../util.ts';
+import { etapaAtual as calcularEtapaAtual, progresso, progressoPorEtapa, situacaoTarefa, ordenarTarefas } from '../../domain/planejamento.ts';
 import { ROTULO_STATUS_LEITURA, TOM_STATUS_LEITURA, autoresCurtos } from './biblioteca/rotulos.ts';
 
 function Indicador({ rotulo, valor, detalhe, icone, para }: { rotulo: string; valor: string; detalhe?: string; icone: ReactNode; para?: string }) {
@@ -43,11 +44,11 @@ export function VisaoGeral() {
   const fontesRecentes = [...fontes].sort((a, b) => b.criadoEm.localeCompare(a.criadoEm)).slice(0, 5);
   const fichasRecentes = [...fichamentos].sort((a, b) => b.criadoEm.localeCompare(a.criadoEm)).slice(0, 5);
   const emAndamento = tarefas.filter((t) => t.status === 'em_andamento').length;
-  const proximas = tarefas
-    .filter((t) => t.status !== 'concluida')
-    .sort((a, b) => (a.prazo ?? '9999').localeCompare(b.prazo ?? '9999'))
-    .slice(0, 5);
-  const etapaAtual = etapas.find((e) => e.dataInicio && e.dataFim && e.dataInicio <= hoje && hoje <= e.dataFim);
+  const proximas = ordenarTarefas(tarefas.filter((t) => t.status !== 'concluida')).slice(0, 5);
+  const etapaAtual = calcularEtapaAtual(etapas, tarefas, hoje);
+  const progressoGeral = progresso(tarefas);
+  const progressoEtapaAtual = etapaAtual ? progressoPorEtapa([etapaAtual], tarefas)[0] : null;
+  const atrasadas = tarefas.filter((t) => situacaoTarefa(t, hoje) === 'atrasada').length;
   const lidas = fontes.filter((f) => f.statusLeitura === 'lido' || f.statusLeitura === 'revisado').length;
   const titulosFonte = new Map(fontes.map((f) => [f.id, f.titulo]));
 
@@ -67,7 +68,7 @@ export function VisaoGeral() {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Indicador rotulo="Fontes" valor={String(fontes.length)} detalhe={fontes.length ? plural(lidas, 'lida ou revisada', 'lidas ou revisadas') : undefined} icone={<Library size={15} />} para="/biblioteca" />
         <Indicador rotulo="Fichamentos" valor={String(fichamentos.length)} icone={<NotebookPen size={15} />} para="/fichamentos" />
-        <Indicador rotulo="Tarefas em andamento" valor={String(emAndamento)} icone={<Loader size={15} />} />
+        <Indicador rotulo="Tarefas em andamento" valor={String(emAndamento)} detalhe={progressoGeral.percentual !== null ? `${progressoGeral.percentual}% do planejamento concluído${atrasadas ? ` · ${atrasadas} atrasada${atrasadas > 1 ? 's' : ''}` : ''}` : undefined} icone={<Loader size={15} />} para="/planejamento" />
         <Indicador rotulo="Prazo de entrega" valor={prazoValor} detalhe={prazoDetalhe} icone={<CalendarClock size={15} />} para={projeto.prazoFinal ? undefined : '/projeto'} />
       </div>
 
@@ -77,13 +78,14 @@ export function VisaoGeral() {
         {fontes.length > 0 && <BotaoLink para="/biblioteca?referencias=1"><Quote size={16} /> Gerar referências</BotaoLink>}
       </div>
 
-      {fontes.length === 0 ? (
+      {fontes.length === 0 && (
         <Cartao className="mt-6 p-6">
           <h2 className="text-base font-semibold">Primeiros passos</h2>
           <ol className="mt-3 flex flex-col gap-3 text-sm text-marinho-700">
             {[
               ['Cadastre as fontes que você já tem', 'Artigos, livros, teses… com autores, ano e periódico.', '/biblioteca/nova'],
               ['Confira os dados e gere as referências ABNT', 'O app mostra o que está faltando ou precisa ser conferido.', null],
+              ['Monte o planejamento', 'Etapas, tarefas e prazos até a entrega, com um planejamento sugerido para começar.', '/planejamento'],
               ['Faça um backup', 'Seus dados ficam só neste navegador. Guarde uma cópia no seu Drive.', '/dados'],
             ].map(([t, d, link], i) => (
               <li key={i} className="flex gap-3">
@@ -96,8 +98,9 @@ export function VisaoGeral() {
             ))}
           </ol>
         </Cartao>
-      ) : (
+      )}
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          {fontes.length > 0 && (<>
           <Cartao>
             <div className="flex items-center justify-between border-b border-borda px-4 py-3">
               <h2 className="text-sm font-semibold">Fontes adicionadas recentemente</h2>
@@ -133,9 +136,10 @@ export function VisaoGeral() {
               </ul>
             )}
           </Cartao>
+          </>)}
 
           <Cartao>
-            <div className="border-b border-borda px-4 py-3"><h2 className="text-sm font-semibold">Próximas tarefas</h2></div>
+            <div className="flex items-center justify-between border-b border-borda px-4 py-3"><h2 className="text-sm font-semibold">Próximas tarefas</h2><Link to="/planejamento" className="flex items-center gap-1 text-xs text-acao-700 hover:underline">Planejamento <ArrowRight size={13} /></Link></div>
             {proximas.length === 0 ? (
               <p className="px-4 py-6 text-sm text-cinza-500">Nenhuma tarefa pendente.</p>
             ) : (
@@ -153,16 +157,24 @@ export function VisaoGeral() {
           <Cartao className="p-4">
             <h2 className="flex items-center gap-2 text-sm font-semibold"><Flag size={15} className="text-cinza-500" /> Etapa do cronograma</h2>
             {etapaAtual ? (
-              <p className="mt-2 text-sm">{etapaAtual.nome} <span className="text-cinza-500">até {dataCurta(etapaAtual.dataFim)}</span></p>
+              <>
+                <p className="mt-2 text-sm">{etapaAtual.nome}{etapaAtual.dataFim && <span className="text-cinza-500"> até {dataCurta(etapaAtual.dataFim)}</span>}</p>
+                {progressoEtapaAtual?.percentual !== null && progressoEtapaAtual && (
+                  <div className="mt-2">
+                    <div className="h-1.5 overflow-hidden rounded-full bg-cinza-100"><div className="h-full rounded-full bg-sucesso-700" style={{ width: `${progressoEtapaAtual.percentual}%` }} /></div>
+                    <p className="mt-1 text-xs text-cinza-500">{progressoEtapaAtual.concluidas} de {plural(progressoEtapaAtual.total, 'tarefa concluída', 'tarefas concluídas')}</p>
+                  </div>
+                )}
+              </>
             ) : (
-              <p className="mt-2 text-sm text-cinza-500">{etapas.length ? 'Nenhuma etapa em andamento hoje.' : 'Nenhuma etapa definida ainda.'}</p>
+              <p className="mt-2 text-sm text-cinza-500">{etapas.length ? 'Nenhuma etapa em andamento hoje.' : <>Nenhuma etapa definida ainda. <Link to="/planejamento" className="text-acao-700 hover:underline">Montar planejamento</Link></>}</p>
             )}
             {fontes.length > 0 && lidas === fontes.length && (
               <p className="mt-3 flex items-center gap-1.5 text-xs text-sucesso-700"><CheckCircle2 size={14} /> Todas as fontes já foram lidas.</p>
             )}
           </Cartao>
         </div>
-      )}
+
     </>
   );
 }

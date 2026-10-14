@@ -95,7 +95,8 @@ export function BoasVindas() {
             <li><strong className="font-medium">Biblioteca:</strong> guardar artigos, livros e teses, com a referência ABNT gerada automaticamente.</li>
             <li><strong className="font-medium">Fichamentos:</strong> anotar trechos, ideias e dados de cada leitura, com a página e o capítulo do TCC.</li>
             <li><strong className="font-medium">Visão geral:</strong> acompanhar quantas fontes já leu e quanto falta para a entrega.</li>
-            <li><strong className="font-medium">Em breve:</strong> planejamento de tarefas, registro das orientações e checklist de entrega.</li>
+            <li><strong className="font-medium">Planejamento:</strong> organizar etapas, tarefas e prazos, com cronograma e alertas de atraso.</li>
+            <li><strong className="font-medium">Em breve:</strong> registro das orientações e checklist de entrega.</li>
           </ul>
         </Cartao>
       </div>

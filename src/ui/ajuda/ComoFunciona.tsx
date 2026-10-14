@@ -6,7 +6,7 @@ const SECOES = [
   { icone: LayoutDashboard, nome: 'Visão geral', para: '/', texto: 'O painel do TCC: números reais, prazo de entrega e o que você fez por último.', pronta: true },
   { icone: Library, nome: 'Biblioteca', para: '/biblioteca', texto: 'Cadastre artigos, livros e outros textos. Cada fonte gera a referência ABNT e mostra o que falta conferir.', pronta: true },
   { icone: NotebookPen, nome: 'Fichamentos', para: '/fichamentos', texto: 'Suas anotações de leitura: citações com página, resumos, ideias e dados, ligados à fonte e ao capítulo do TCC.', pronta: true },
-  { icone: CalendarCheck, nome: 'Planejamento', para: '/planejamento', texto: 'Etapas, tarefas e prazos, com o progresso calculado pelo que você concluiu.', pronta: false },
+  { icone: CalendarCheck, nome: 'Planejamento', para: '/planejamento', texto: 'Etapas, tarefas e prazos, com cronograma e o progresso calculado pelo que você concluiu.', pronta: true },
   { icone: MessagesSquare, nome: 'Orientações', para: '/orientacoes', texto: 'O que o orientador pediu e o que você já ajustou.', pronta: false },
   { icone: ListChecks, nome: 'Conferência final', para: '/conferencia', texto: 'Checklist para preparar a entrega.', pronta: false },
   { icone: HardDriveDownload, nome: 'Backup e dados', para: '/dados', texto: 'Baixe uma cópia de segurança dos seus dados ou recupere um backup.', pronta: true },

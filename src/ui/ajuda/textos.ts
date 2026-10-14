@@ -43,8 +43,14 @@ export const AJUDA: Record<Secao, TextoAjuda> = {
   },
   planejamento: {
     titulo: 'Para que serve o Planejamento',
-    paraQue: 'Organiza as etapas, tarefas e prazos do seu TCC, e mostra o progresso com base no que você concluiu.',
-    passos: ['Esta seção chega numa próxima atualização.'],
+    paraQue: 'Organiza as etapas, tarefas e prazos do seu TCC e mostra o progresso com base nas tarefas que você concluiu.',
+    passos: [
+      'Comece pelo “planejamento sugerido” para revisão de literatura ou crie as suas etapas do zero. Tudo é editável.',
+      'Etapas agrupam tarefas e marcam entregas intermediárias (ex.: versão para o orientador).',
+      'Marque a caixinha da tarefa ao concluir. O progresso e os alertas de atraso se atualizam sozinhos.',
+      'Use o Cronograma para ver as etapas no tempo, com o dia de hoje e a entrega final marcados.',
+    ],
+    exemplo: 'Ex.: etapa “Leitura e fichamento” de 01/11 a 15/12, com a tarefa “Ler os artigos sobre comunicação” para 20/11.',
   },
   orientacoes: {
     titulo: 'Para que serve a aba Orientações',

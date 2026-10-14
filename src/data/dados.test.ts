@@ -153,3 +153,44 @@ describe('fichamentos', () => {
     expect(editada.parafrase).toBe('Nova');
   });
 });
+
+describe('planejamento', () => {
+  test('tarefas: data de conclusão acompanha o status; excluir etapa mantém as tarefas', async () => {
+    const pl = await import('./planejamento.ts');
+    const p = await criarProjeto({ nome: 'TCC' });
+    const e = await pl.criarEtapa(p.id, { nome: 'Leitura', dataInicio: '2026-10-01', dataFim: '2026-10-31' });
+    const t = await pl.criarTarefa(p.id, { titulo: ' Ler artigos ', etapaId: e.id, prioridade: 'alta', status: 'a_fazer' });
+    expect((await db.tarefas.get(t.id))!.titulo).toBe('Ler artigos');
+    await pl.alterarStatusTarefa(t.id, 'concluida');
+    const concluida = (await db.tarefas.get(t.id))!;
+    expect(concluida.concluidaEm).toBeTruthy();
+    await pl.alterarStatusTarefa(t.id, 'em_andamento');
+    expect((await db.tarefas.get(t.id))!.concluidaEm).toBeUndefined();
+    await pl.excluirEtapa(e.id);
+    const semEtapa = (await db.tarefas.get(t.id))!;
+    expect(semEtapa.etapaId).toBeUndefined();
+    await expect(pl.criarTarefa(p.id, { titulo: '  ', prioridade: 'media', status: 'a_fazer' })).rejects.toBeInstanceOf(ErroDeValidacao);
+  });
+
+  test('reordenar etapas e aplicar o planejamento sugerido só num planejamento vazio', async () => {
+    const pl = await import('./planejamento.ts');
+    const p = await criarProjeto({ nome: 'TCC' });
+    await pl.aplicarPlanejamentoSugerido(p.id, '2026-10-14', '2027-06-30');
+    const etapas = (await db.etapas.where('projetoId').equals(p.id).toArray()).sort((a, b) => a.ordem - b.ordem);
+    expect(etapas[0].nome).toBe('Definição do tema e do problema');
+    expect(await db.tarefas.where('projetoId').equals(p.id).count()).toBeGreaterThan(10);
+    await pl.moverEtapa(etapas[1].id, -1);
+    const reordenadas = (await db.etapas.where('projetoId').equals(p.id).toArray()).sort((a, b) => a.ordem - b.ordem);
+    expect(reordenadas[0].id).toBe(etapas[1].id);
+    await expect(pl.aplicarPlanejamentoSugerido(p.id, '2026-10-14', '2027-06-30')).rejects.toThrow('já tem etapas');
+  });
+
+  test('excluir tarefa desfaz o vínculo da orientação', async () => {
+    const pl = await import('./planejamento.ts');
+    const p = await criarProjeto({ nome: 'TCC' });
+    const t = await pl.criarTarefa(p.id, { titulo: 'Revisar introdução', prioridade: 'media', status: 'a_fazer' });
+    await db.orientacoes.add({ id: 'o1', projetoId: p.id, titulo: 'Ajustar intro', origem: 'reuniao', prioridade: 'media', status: 'pendente', tarefaId: t.id, criadoEm: '', atualizadoEm: '' });
+    await pl.excluirTarefa(t.id);
+    expect((await db.orientacoes.get('o1'))!.tarefaId).toBeUndefined();
+  });
+});
