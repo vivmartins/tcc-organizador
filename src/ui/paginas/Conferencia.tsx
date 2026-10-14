@@ -143,7 +143,7 @@ function Situacao({ projetoId }: { projetoId: string }) {
               {linha(s.naoConferidas === 0, s.naoConferidas ? `${plural(s.naoConferidas, 'fonte com dados ainda não conferidos', 'fontes com dados ainda não conferidos')}` : 'Todos os dados das fontes foram conferidos.', s.naoConferidas ? { para: '/biblioteca', rotulo: 'conferir' } : undefined)}
             </>}
         {linha(s.tarefasPendentes === 0, s.tarefasPendentes ? `${plural(s.tarefasPendentes, 'tarefa pendente', 'tarefas pendentes')} no planejamento` : 'Nenhuma tarefa pendente no planejamento.', s.tarefasPendentes ? { para: '/planejamento', rotulo: 'Planejamento' } : undefined)}
-        {s.orientacoesPendentes > 0 && linha(false, `${plural(s.orientacoesPendentes, 'orientação pendente', 'orientações pendentes')}`)}
+        {linha(s.orientacoesPendentes === 0, s.orientacoesPendentes ? `${plural(s.orientacoesPendentes, 'orientação pendente', 'orientações pendentes')}` : 'Nenhuma orientação pendente.', s.orientacoesPendentes ? { para: '/orientacoes', rotulo: 'Orientações' } : undefined)}
       </ul>
     </Cartao>
   );

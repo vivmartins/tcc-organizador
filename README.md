@@ -36,6 +36,6 @@ supabase/   modelo de dados para uma futura sincronização em nuvem (opcional, 
 - [x] Etapa 5 — fichamentos (registro, busca, filtros, cópia da ficha completa)
 - [ ] Etapa 4 — importação por DOI (Crossref/OpenAlex) e PDF
 - [x] Etapa 6 — planejamento: etapas, tarefas, cronograma, progresso e planejamento sugerido
-- [ ] Etapa 7 — orientações
+- [x] Etapa 7 — orientações (registro, status, prazos e vínculo com tarefas)
 - [x] Etapa 8a — conferência final (checklist editável com situação do projeto)
 - [ ] Etapa 8b — backup automático

@@ -9,7 +9,7 @@ import { FormularioFonte } from './ui/paginas/biblioteca/FormularioFonte.tsx';
 import { PaginaFonte } from './ui/paginas/biblioteca/PaginaFonte.tsx';
 import { Dados } from './ui/paginas/Dados.tsx';
 import { Fichamentos } from './ui/paginas/fichamentos/Fichamentos.tsx';
-import { EmBreve } from './ui/paginas/EmBreve.tsx';
+import { Orientacoes } from './ui/paginas/Orientacoes.tsx';
 import { ComoFunciona } from './ui/ajuda/ComoFunciona.tsx';
 import { Planejamento } from './ui/paginas/planejamento/Planejamento.tsx';
 import { Conferencia } from './ui/paginas/Conferencia.tsx';
@@ -28,7 +28,7 @@ function Rotas() {
         <Route path="biblioteca/:id/editar" element={<FormularioFonte key="editar" />} />
         <Route path="fichamentos" element={<Fichamentos />} />
         <Route path="planejamento" element={<Planejamento />} />
-        <Route path="orientacoes" element={<EmBreve secao="orientacoes" titulo="Orientações" descricao="Registro das orientações do seu orientador, com prazos, status e vínculo com tarefas." />} />
+        <Route path="orientacoes" element={<Orientacoes />} />
         <Route path="conferencia" element={<Conferencia />} />
         <Route path="projeto" element={<EditarProjeto />} />
         <Route path="projeto/novo" element={<NovoProjeto />} />

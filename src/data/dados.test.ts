@@ -216,3 +216,29 @@ describe('conferência final', () => {
     expect(depois.some((i) => i.categoria === 'Exigências do curso' && i.texto === 'Item extra')).toBe(true);
   });
 });
+
+describe('orientações', () => {
+  test('cria com tarefa vinculada, valida vínculo e mantém a tarefa ao excluir', async () => {
+    const or = await import('./orientacoes.ts');
+    const pl = await import('./planejamento.ts');
+    const p = await criarProjeto({ nome: 'TCC' });
+    const outro = await criarProjeto({ nome: 'Outro' });
+    const base = { titulo: ' Reescrever a introdução ', origem: 'reuniao' as const, prioridade: 'alta' as const, status: 'pendente' as const, prazo: '2026-11-01', capituloSecao: '1 Introdução' };
+    const o = await or.criarOrientacao(p.id, base, { criarTarefaVinculada: true });
+    const salva = (await db.orientacoes.get(o.id))!;
+    expect(salva.titulo).toBe('Reescrever a introdução');
+    const tarefa = (await db.tarefas.get(salva.tarefaId!))!;
+    expect(tarefa.titulo).toBe('Reescrever a introdução');
+    expect(tarefa.prazo).toBe('2026-11-01');
+    expect(tarefa.projetoId).toBe(p.id);
+
+    const tarefaOutro = await pl.criarTarefa(outro.id, { titulo: 'x', prioridade: 'media', status: 'a_fazer' });
+    await expect(or.atualizarOrientacao(o.id, { ...base, tarefaId: tarefaOutro.id })).rejects.toBeInstanceOf(ErroDeValidacao);
+    await expect(or.criarOrientacao(p.id, { ...base, titulo: '' })).rejects.toBeInstanceOf(ErroDeValidacao);
+
+    await or.alterarStatusOrientacao(o.id, 'concluida');
+    expect((await db.orientacoes.get(o.id))!.status).toBe('concluida');
+    await or.excluirOrientacao(o.id);
+    expect(await db.tarefas.get(tarefa.id)).toBeTruthy();
+  });
+});

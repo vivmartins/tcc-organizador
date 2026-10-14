@@ -97,7 +97,7 @@ export function BoasVindas() {
             <li><strong className="font-medium">Visão geral:</strong> acompanhar quantas fontes já leu e quanto falta para a entrega.</li>
             <li><strong className="font-medium">Planejamento:</strong> organizar etapas, tarefas e prazos, com cronograma e alertas de atraso.</li>
             <li><strong className="font-medium">Conferência final:</strong> checklist de entrega adaptável à sua instituição.</li>
-            <li><strong className="font-medium">Em breve:</strong> registro das orientações do orientador.</li>
+            <li><strong className="font-medium">Orientações:</strong> registrar o que o orientador pediu e acompanhar as revisões.</li>
           </ul>
         </Cartao>
       </div>

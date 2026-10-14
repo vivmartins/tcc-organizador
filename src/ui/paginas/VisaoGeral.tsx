@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { BookPlus, Quote, Library, NotebookPen, Loader, CalendarClock, ArrowRight, CheckCircle2, Flag } from 'lucide-react';
+import { MessagesSquare, BookPlus, Quote, Library, NotebookPen, Loader, CalendarClock, ArrowRight, CheckCircle2, Flag } from 'lucide-react';
 import { db } from '../../data/db.ts';
 import { AjudaSecao } from '../ajuda/AjudaSecao.tsx';
 import { useProjetoObrigatorio } from '../projetoAtivo.tsx';
@@ -76,6 +76,7 @@ export function VisaoGeral() {
         <BotaoLink para="/biblioteca/nova" variante="primario"><BookPlus size={16} /> Cadastrar fonte</BotaoLink>
         {fontes.length > 0 && <BotaoLink para="/fichamentos"><NotebookPen size={16} /> Adicionar anotação</BotaoLink>}
         {fontes.length > 0 && <BotaoLink para="/biblioteca?referencias=1"><Quote size={16} /> Gerar referências</BotaoLink>}
+        <BotaoLink para="/orientacoes?nova=1"><MessagesSquare size={16} /> Registrar orientação</BotaoLink>
       </div>
 
       {fontes.length === 0 && (

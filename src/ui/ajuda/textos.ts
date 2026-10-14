@@ -54,8 +54,14 @@ export const AJUDA: Record<Secao, TextoAjuda> = {
   },
   orientacoes: {
     titulo: 'Para que serve a aba Orientações',
-    paraQue: 'Registra o que o seu orientador pediu, em reuniões, e-mails ou comentários, e acompanha o que já foi ajustado.',
-    passos: ['Esta seção chega numa próxima atualização.'],
+    paraQue: 'Registra o que o seu orientador pediu, em reuniões, e-mails ou comentários nos documentos, e acompanha o que já foi ajustado.',
+    passos: [
+      'Depois de cada orientação, registre o assunto, o que foi pedido, o capítulo e o prazo.',
+      'Marque “criar uma tarefa no Planejamento” ou vincule a uma tarefa existente, para não registrar a mesma coisa duas vezes.',
+      'Ao ajustar, anote “o que você alterou”: é ótimo para mostrar na próxima reunião.',
+      'Use as abas Pendentes, Prazo próximo e Concluídas para acompanhar as revisões.',
+    ],
+    exemplo: 'Ex.: “Reorganizar o capítulo 2” · reunião em 10/10 · prazo 24/10 · alterado: “juntei as seções 2.2 e 2.3”.',
   },
   conferencia: {
     titulo: 'Para que serve a Conferência final',
