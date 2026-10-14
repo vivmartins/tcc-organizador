@@ -178,11 +178,9 @@ function valorPresente(d: DadosBibliograficos, campo: CampoBibliografico): boole
   return tem(v as string | undefined);
 }
 
+/** Campos bibliográficos preenchidos (ignora quaisquer outros dados guardados junto, como tags ou resumo). */
 function camposUsados(d: DadosBibliograficos): CampoBibliografico[] {
-  return (Object.keys(d) as (keyof DadosBibliograficos)[]).filter(
-    (k): k is CampoBibliografico =>
-      k !== 'tipo' && k !== 'statusCampos' && k !== 'papelOrganizadores' && valorPresente(d, k as CampoBibliografico),
-  );
+  return (Object.keys(ROTULO_CAMPO) as CampoBibliografico[]).filter((k) => valorPresente(d, k));
 }
 
 export function levantarPendencias(d: DadosBibliograficos): Pendencia[] {

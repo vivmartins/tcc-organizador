@@ -1,0 +1,46 @@
+@import 'tailwindcss';
+
+/* Paleta do projeto: fundo claro, azul-marinho para texto, azul suave para ações,
+   verde discreto para estados positivos, cinza para informações secundárias. */
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  --color-fundo: #f7f8fa;
+  --color-superficie: #ffffff;
+  --color-borda: #e4e7ec;
+  --color-borda-forte: #cfd4dc;
+
+  --color-marinho-900: #14213d;
+  --color-marinho-700: #2b3a5c;
+  --color-cinza-600: #5b6577;
+  --color-cinza-500: #7a8394;
+  --color-cinza-100: #eef0f4;
+
+  --color-acao-600: #2f5fd0;
+  --color-acao-700: #254db0;
+  --color-acao-50: #edf2fd;
+  --color-acao-100: #dbe5fb;
+
+  --color-sucesso-700: #23704a;
+  --color-sucesso-50: #eaf6ef;
+  --color-alerta-700: #8a5a00;
+  --color-alerta-50: #fdf5e3;
+  --color-perigo-700: #b42318;
+  --color-perigo-50: #fdecea;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-fundo text-marinho-900 antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-acao-600;
+  }
+  ::selection {
+    @apply bg-acao-100;
+  }
+}

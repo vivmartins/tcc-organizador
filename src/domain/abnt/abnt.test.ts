@@ -1,5 +1,5 @@
 // Testes do gerador ABNT. Rodar com: node --test src/domain
-import { test } from 'node:test';
+import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import type { DadosBibliograficos } from '../tipos.ts';
 import { gerarReferencia, gerarListaDeReferencias, formatarDataAcesso, tituloComoEntrada } from './referencia.ts';
@@ -192,6 +192,13 @@ test('diferencia dados verificados de dados importados ou não conferidos', () =
   assert.ok(conferir.some((p) => p.campo === 'veiculo' && p.mensagem.includes('busca automática')));
   assert.ok(conferir.some((p) => p.campo === 'paginas' && p.mensagem.includes('não foi conferido')));
   assert.equal(r.completa, true); // conferir não impede, mas fica visível
+});
+
+test('ignora dados que não são bibliográficos (tags, resumo, listas)', () => {
+  const comExtras = { ...artigo, resumo: { objetivo: 'x' }, tagIds: ['t1'], palavrasChave: ['a'], statusLeitura: 'lido' } as DadosBibliograficos;
+  const r = gerarReferencia(comExtras);
+  assert.equal(r.texto, gerarReferencia(artigo).texto);
+  assert.ok(r.pendencias.every((p) => p.campo in { titulo: 1, subtitulo: 1, autores: 1, ano: 1, veiculo: 1, localPublicacao: 1, volume: 1, numero: 1, paginas: 1, doi: 1, url: 1, dataAcesso: 1 }));
 });
 
 test('datas de acesso por extenso abreviado', () => {
