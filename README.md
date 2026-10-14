@@ -34,7 +34,7 @@ supabase/   modelo de dados para uma futura sincronização em nuvem (opcional, 
 - [x] Etapa 2 — biblioteca: cadastro manual, busca sem acento, filtros, ordenação, duplicatas, tags
 - [x] Etapa 3 — referências e citações ABNT, com pendências e dados conferidos
 - [x] Etapa 5 — fichamentos (registro, busca, filtros, cópia da ficha completa)
-- [ ] Etapa 4 — importação por DOI (Crossref/OpenAlex) e PDF
+- [x] Etapa 4 — importação por DOI, link e PDF (Crossref + OpenAlex, direto do navegador)
 - [x] Etapa 6 — planejamento: etapas, tarefas, cronograma, progresso e planejamento sugerido
 - [x] Etapa 7 — orientações (registro, status, prazos e vínculo com tarefas)
 - [x] Etapa 8a — conferência final (checklist editável com situação do projeto)

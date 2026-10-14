@@ -23,7 +23,8 @@ export const AJUDA: Record<Secao, TextoAjuda> = {
     titulo: 'Para que serve a Biblioteca',
     paraQue: 'É onde ficam todos os textos que você usa no TCC: artigos, livros, teses, documentos e sites. Cada fonte guarda os dados necessários para a referência ABNT.',
     passos: [
-      'Clique em “Cadastrar fonte” e preencha o que souber. O que faltar será apontado depois.',
+      'Clique em “Cadastrar fonte”. Se tiver o DOI, o link do artigo ou o PDF, use “Preencher automaticamente”; senão, preencha o que souber.',
+      'Dados importados vêm marcados como “a conferir”: compare com a publicação antes de usar a referência.',
       'Abra uma fonte para ver a referência ABNT pronta, conferir os dados e registrar o resumo do estudo.',
       'Use tags (temas) para agrupar fontes por assunto e o status para controlar o que já leu.',
       'Marque várias fontes e clique em “Copiar referências” para colar a lista, em ordem alfabética, no seu documento.',

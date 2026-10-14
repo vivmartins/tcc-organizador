@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ArrowLeft, ArrowDown, ArrowUp, Plus, Trash2, Info } from 'lucide-react';
 import { db, type Fonte, type StatusLeitura } from '../../../data/db.ts';
-import { criarFonte, atualizarFonte, verificarDuplicatas, ErroDeValidacao, type DadosFonte } from '../../../data/fontes.ts';
+import { criarFonte, atualizarFonte, verificarDuplicatas, ErroDeValidacao, normalizarDadosFonte, type DadosFonte } from '../../../data/fontes.ts';
+import type { OrigemMetadados } from '../../../data/db.ts';
+import { PainelImportacao, type Importacao, type Modo } from './PainelImportacao.tsx';
 import { obterOuCriarTag } from '../../../data/tags.ts';
 import { ROTULO_TIPO, type Autor, type CampoBibliografico, type TipoPublicacao } from '../../../domain/tipos.ts';
 import { useProjetoObrigatorio } from '../../projetoAtivo.tsx';
@@ -183,6 +185,11 @@ export function FormularioFonte() {
   }, [projeto.id, id]);
 
   const [e, setE] = useState<Estado | null>(null);
+  const [params] = useSearchParams();
+  // Valores vindos da importação automática (para marcar esses campos como "importado" ao salvar)
+  const [importados, setImportados] = useState<Record<string, string>>({});
+  const [origem, setOrigem] = useState<OrigemMetadados | null>(null);
+  const [versaoForm, setVersaoForm] = useState(0);
   const [erros, setErros] = useState<Record<string, string>>({});
   const [salvando, setSalvando] = useState(false);
   const [duplicatas, setDuplicatas] = useState<{ fonte: Fonte; motivo: string }[] | null>(null);
@@ -198,11 +205,13 @@ export function FormularioFonte() {
   }
   const editando = !!carregado.fonte;
   const visiveis = CAMPOS_POR_TIPO[e.tipo];
+  const camposDoTipo = (t: TipoPublicacao) => CAMPOS_POR_TIPO[t];
   const set = (p: Partial<Estado>) => setE({ ...e, ...p });
   const setTexto = (c: CampoForm, v: string) => setE({ ...e, textos: { ...e.textos, [c]: v } });
 
   function montarDados(est: Estado, tagIds: string[]): DadosFonte {
     const n = (s?: string) => (s?.trim() ? Number(s) : undefined);
+    const visiveis = camposDoTipo(est.tipo);
     const d: DadosFonte = {
       tipo: est.tipo,
       titulo: est.titulo,
@@ -216,7 +225,7 @@ export function FormularioFonte() {
       tagIds,
       statusLeitura: est.statusLeitura,
       observacoes: est.observacoes,
-      origemMetadados: carregado?.fonte?.origemMetadados ?? 'manual',
+      origemMetadados: origem ?? carregado?.fonte?.origemMetadados ?? 'manual',
       resumo: carregado?.fonte?.resumo,
     };
     // Só os campos que fazem sentido para o tipo escolhido são salvos.
@@ -228,6 +237,52 @@ export function FormularioFonte() {
       else (d as unknown as Record<string, unknown>)[c] = est.textos[c];
     }
     return d;
+  }
+
+  /** Campos ainda iguais ao que foi importado ficam marcados como "importado" (a conferir). */
+  function statusDosImportados(d: DadosFonte): DadosFonte['statusCampos'] {
+    const norm = normalizarDadosFonte(d) as unknown as Record<string, unknown>;
+    const status: NonNullable<DadosFonte['statusCampos']> = {};
+    for (const [campo, json] of Object.entries(importados)) {
+      if (JSON.stringify(norm[campo] ?? null) === json) status[campo as keyof typeof status] = 'importado';
+    }
+    return status;
+  }
+
+  function aplicarImportacao({ resultado, url, modo }: Importacao) {
+    if (!e) return;
+    const hoje = hojeIso();
+    const base = estadoInicial(undefined, nomesTags);
+    const novo: Estado = { ...base, tags: e.tags, statusLeitura: e.statusLeitura, observacoes: e.observacoes, palavrasChave: e.palavrasChave };
+    if (resultado) {
+      const r = resultado.dados;
+      novo.tipo = r.tipo ?? 'artigo_periodico';
+      novo.titulo = r.titulo ?? '';
+      novo.subtitulo = r.subtitulo ?? '';
+      if (r.autores?.length) novo.autores = r.autores;
+      if (r.organizadores?.length) novo.organizadores = r.organizadores;
+      novo.ano = r.ano ? String(r.ano) : '';
+      novo.doi = r.doi ?? '';
+      for (const c of Object.keys(ROTULO_FORM) as CampoForm[]) {
+        const v = r[c];
+        if (typeof v === 'string' || typeof v === 'number') novo.textos[c] = String(v);
+      }
+    }
+    if (url) {
+      novo.url = url;
+      novo.dataAcesso = hoje;
+    }
+    // Guarda o valor importado de cada campo, já no formato salvo
+    const norm = normalizarDadosFonte(montarDados(novo, [])) as unknown as Record<string, unknown>;
+    const marcados: Record<string, string> = {};
+    const camposImportados = [...Object.keys(resultado?.origemDosCampos ?? {}), ...(url ? ['url'] : [])];
+    for (const c of camposImportados) if (c !== 'tipo' && norm[c] !== undefined) marcados[c] = JSON.stringify(norm[c]);
+    setImportados(marcados);
+    setOrigem(resultado ? (resultado.servicos[0] ?? 'manual') : modo === 'link' ? 'url' : 'manual');
+    if (modo === 'pdf' && resultado) setOrigem('pdf');
+    setE(novo);
+    setErros({});
+    setVersaoForm((v) => v + 1);
   }
 
   async function salvar(confirmouDuplicata = false) {
@@ -247,6 +302,7 @@ export function FormularioFonte() {
       const tagIds = [];
       for (const nome of e.tags) tagIds.push((await obterOuCriarTag(projeto.id, nome)).id);
       const dados = montarDados(e, tagIds);
+      if (Object.keys(importados).length) dados.statusCampos = { ...(carregado?.fonte?.statusCampos ?? {}), ...statusDosImportados(dados) };
       if (carregado?.fonte) {
         await atualizarFonte(carregado.fonte.id, dados);
         avisar('sucesso', 'Alterações salvas.');
@@ -291,7 +347,8 @@ export function FormularioFonte() {
       />
 
       <div className="flex flex-col gap-4">
-        <Secao titulo="Identificação">
+        {!editando && <PainelImportacao key={params.get('importar') ?? 'doi'} modoInicial={(['doi', 'link', 'pdf'].includes(params.get('importar') ?? '') ? params.get('importar') : 'doi') as Modo} aoImportar={aplicarImportacao} />}
+        <Secao titulo="Identificação" key={`ident-${versaoForm}`}>
           <Campo rotulo="Tipo de publicação" id="tipo">
             <Selecao id="tipo" value={e.tipo} onChange={(ev) => set({ tipo: ev.target.value as TipoPublicacao })} className="sm:w-72">
               {(Object.keys(ROTULO_TIPO) as TipoPublicacao[]).map((t) => <option key={t} value={t}>{ROTULO_TIPO[t]}</option>)}
