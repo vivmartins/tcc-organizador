@@ -9,6 +9,7 @@ import { ORDEM_TIPOS_FICHAMENTO, ROTULO_TIPO_FICHAMENTO, type TipoFichamento } f
 import { plural } from '../../util.ts';
 import { CartaoFicha } from './CartaoFicha.tsx';
 import { FormularioFicha } from './FormularioFicha.tsx';
+import { AjudaSecao } from '../../ajuda/AjudaSecao.tsx';
 
 const comparar = (a: string, b: string) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' });
 
@@ -136,6 +137,7 @@ export function Fichamentos() {
   return (
     <>
       <CabecalhoPagina titulo="Fichamentos" descricao="Citações, resumos e ideias de todas as suas fontes." />
+      <AjudaSecao secao="fichamentos" />
       <ListaDeFichas />
     </>
   );

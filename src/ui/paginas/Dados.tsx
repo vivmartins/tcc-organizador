@@ -8,6 +8,7 @@ import {
   obterUltimoBackup, pedirArmazenamentoPersistente, ROTULO_TABELA, type ArquivoBackup, type ResumoBackup,
 } from '../../data/backup.ts';
 import { dataCurta } from '../util.ts';
+import { AjudaSecao } from '../ajuda/AjudaSecao.tsx';
 
 function baixar(nome: string, conteudo: string) {
   const url = URL.createObjectURL(new Blob([conteudo], { type: 'application/json' }));
@@ -56,6 +57,7 @@ export function Dados() {
   return (
     <div className="max-w-3xl">
       <CabecalhoPagina titulo="Backup e dados" descricao="Seus dados ficam só neste navegador, neste computador. O backup é a sua cópia de segurança." />
+      <AjudaSecao secao="dados" />
 
       <div className="flex flex-col gap-4">
         <Cartao className="p-5 sm:p-6">

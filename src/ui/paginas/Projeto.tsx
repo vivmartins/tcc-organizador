@@ -89,6 +89,15 @@ export function BoasVindas() {
           </p>
           <FormularioProjeto textoBotao="Criar projeto" aoSalvar={async (d) => { await criarProjeto(d); avisar('sucesso', 'Projeto criado.'); }} />
         </Cartao>
+        <Cartao className="mt-4 p-6 sm:p-8">
+          <h2 className="text-sm font-semibold">O que você pode fazer aqui</h2>
+          <ul className="mt-3 flex flex-col gap-2 text-sm text-marinho-700">
+            <li><strong className="font-medium">Biblioteca:</strong> guardar artigos, livros e teses, com a referência ABNT gerada automaticamente.</li>
+            <li><strong className="font-medium">Fichamentos:</strong> anotar trechos, ideias e dados de cada leitura, com a página e o capítulo do TCC.</li>
+            <li><strong className="font-medium">Visão geral:</strong> acompanhar quantas fontes já leu e quanto falta para a entrega.</li>
+            <li><strong className="font-medium">Em breve:</strong> planejamento de tarefas, registro das orientações e checklist de entrega.</li>
+          </ul>
+        </Cartao>
       </div>
     </div>
   );

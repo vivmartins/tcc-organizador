@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Library, NotebookPen, CalendarCheck, MessagesSquare, ListChecks,
-  ChevronsUpDown, Check, Plus, Settings2, HardDriveDownload, Menu, X, BookMarked,
+  ChevronsUpDown, Check, Plus, Settings2, HardDriveDownload, Menu, X, BookMarked, CircleHelp,
 } from 'lucide-react';
 import { cx } from '../componentes/base.tsx';
 import { useProjeto } from '../projetoAtivo.tsx';
@@ -108,6 +108,10 @@ function Navegacao({ aoNavegar }: { aoNavegar?: () => void }) {
       </nav>
       <div className="mt-auto flex flex-col gap-2">
         <AvisoBackup />
+        <NavLink to="/como-funciona" className={item} onClick={aoNavegar}>
+          <CircleHelp size={17} strokeWidth={1.8} />
+          Como funciona
+        </NavLink>
         <NavLink to="/dados" className={item} onClick={aoNavegar}>
           <HardDriveDownload size={17} strokeWidth={1.8} />
           Backup e dados

@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { BookPlus, Search, Library, Copy, X, AlertCircle, ArrowUpDown } from 'lucide-react';
 import { db, type Fonte, type StatusLeitura } from '../../../data/db.ts';
+import { AjudaSecao } from '../../ajuda/AjudaSecao.tsx';
 import { useProjetoObrigatorio } from '../../projetoAtivo.tsx';
 import { Botao, BotaoLink, CabecalhoPagina, Cartao, EstadoVazio, Entrada, Selecao, Selo, cx } from '../../componentes/base.tsx';
 import { useAvisos } from '../../componentes/dialogos.tsx';
@@ -123,6 +124,7 @@ export function Biblioteca() {
           </>
         }
       />
+      <AjudaSecao secao="biblioteca" />
 
       {dados.fontes.length === 0 ? (
         <Cartao>

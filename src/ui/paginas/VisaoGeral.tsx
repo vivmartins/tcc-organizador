@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { BookPlus, Quote, Library, NotebookPen, Loader, CalendarClock, ArrowRight, CheckCircle2, Flag } from 'lucide-react';
 import { db } from '../../data/db.ts';
+import { AjudaSecao } from '../ajuda/AjudaSecao.tsx';
 import { useProjetoObrigatorio } from '../projetoAtivo.tsx';
 import { Cartao, CabecalhoPagina, BotaoLink, Selo, cx } from '../componentes/base.tsx';
 import { dataCurta, diasAte, hojeIso, plural } from '../util.ts';
@@ -61,6 +62,7 @@ export function VisaoGeral() {
   return (
     <>
       <CabecalhoPagina titulo={projeto.nome} descricao={projeto.tema || 'Visão geral do seu TCC'} />
+      <AjudaSecao secao="visao" />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Indicador rotulo="Fontes" valor={String(fontes.length)} detalhe={fontes.length ? plural(lidas, 'lida ou revisada', 'lidas ou revisadas') : undefined} icone={<Library size={15} />} para="/biblioteca" />
