@@ -194,3 +194,25 @@ describe('planejamento', () => {
     expect((await db.orientacoes.get('o1'))!.tarefaId).toBeUndefined();
   });
 });
+
+describe('conferência final', () => {
+  test('checklist sugerido, edição, conclusão e categorias', async () => {
+    const ck = await import('./checklist.ts');
+    const p = await criarProjeto({ nome: 'TCC' });
+    await ck.aplicarChecklistSugerido(p.id);
+    const total = ck.CHECKLIST_SUGERIDO.reduce((s, [, i]) => s + i.length, 0);
+    const itens = await db.checklist.where('projetoId').equals(p.id).sortBy('ordem');
+    expect(itens).toHaveLength(total);
+    expect(itens[0].categoria).toBe('Dados bibliográficos');
+    await expect(ck.aplicarChecklistSugerido(p.id)).rejects.toThrow('já tem');
+    await ck.alternarItem(itens[0].id, true);
+    await ck.editarItem(itens[1].id, '  Novo   texto ');
+    await expect(ck.editarItem(itens[1].id, '  ')).rejects.toThrow();
+    await ck.criarItem(p.id, 'Minha categoria', 'Item extra');
+    await ck.renomearCategoria(p.id, 'Minha categoria', 'Exigências do curso');
+    const depois = await db.checklist.where('projetoId').equals(p.id).toArray();
+    expect(depois.find((i) => i.id === itens[0].id)!.concluido).toBe(true);
+    expect(depois.find((i) => i.id === itens[1].id)!.texto).toBe('Novo texto');
+    expect(depois.some((i) => i.categoria === 'Exigências do curso' && i.texto === 'Item extra')).toBe(true);
+  });
+});

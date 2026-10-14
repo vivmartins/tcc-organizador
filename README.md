@@ -37,4 +37,5 @@ supabase/   modelo de dados para uma futura sincronização em nuvem (opcional, 
 - [ ] Etapa 4 — importação por DOI (Crossref/OpenAlex) e PDF
 - [x] Etapa 6 — planejamento: etapas, tarefas, cronograma, progresso e planejamento sugerido
 - [ ] Etapa 7 — orientações
-- [ ] Etapa 8 — conferência final, backup automático e publicação
+- [x] Etapa 8a — conferência final (checklist editável com situação do projeto)
+- [ ] Etapa 8b — backup automático

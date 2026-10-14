@@ -96,7 +96,8 @@ export function BoasVindas() {
             <li><strong className="font-medium">Fichamentos:</strong> anotar trechos, ideias e dados de cada leitura, com a página e o capítulo do TCC.</li>
             <li><strong className="font-medium">Visão geral:</strong> acompanhar quantas fontes já leu e quanto falta para a entrega.</li>
             <li><strong className="font-medium">Planejamento:</strong> organizar etapas, tarefas e prazos, com cronograma e alertas de atraso.</li>
-            <li><strong className="font-medium">Em breve:</strong> registro das orientações e checklist de entrega.</li>
+            <li><strong className="font-medium">Conferência final:</strong> checklist de entrega adaptável à sua instituição.</li>
+            <li><strong className="font-medium">Em breve:</strong> registro das orientações do orientador.</li>
           </ul>
         </Cartao>
       </div>

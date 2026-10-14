@@ -59,8 +59,13 @@ export const AJUDA: Record<Secao, TextoAjuda> = {
   },
   conferencia: {
     titulo: 'Para que serve a Conferência final',
-    paraQue: 'Um checklist para preparar a entrega: referências, formatação, capítulos e arquivos.',
-    passos: ['Esta seção chega numa próxima atualização.'],
+    paraQue: 'Um checklist para preparar a entrega: dados das fontes, referências, capítulos, orientações, formatação e arquivos.',
+    passos: [
+      'Comece pelo checklist sugerido ou crie o seu. Adapte os itens às exigências da sua instituição.',
+      'Use a “Situação atual do projeto” para saber o que ainda falta: fontes com dados faltando, dados não conferidos e tarefas pendentes.',
+      'Marque cada item quando concluir. “Mostrar só pendentes” ajuda a focar no que falta.',
+      'O app não confere o documento do TCC automaticamente: os itens são marcados por você.',
+    ],
   },
   dados: {
     titulo: 'Por que fazer backup',

@@ -12,6 +12,7 @@ import { Fichamentos } from './ui/paginas/fichamentos/Fichamentos.tsx';
 import { EmBreve } from './ui/paginas/EmBreve.tsx';
 import { ComoFunciona } from './ui/ajuda/ComoFunciona.tsx';
 import { Planejamento } from './ui/paginas/planejamento/Planejamento.tsx';
+import { Conferencia } from './ui/paginas/Conferencia.tsx';
 
 function Rotas() {
   const { carregando, projeto } = useProjeto();
@@ -28,7 +29,7 @@ function Rotas() {
         <Route path="fichamentos" element={<Fichamentos />} />
         <Route path="planejamento" element={<Planejamento />} />
         <Route path="orientacoes" element={<EmBreve secao="orientacoes" titulo="Orientações" descricao="Registro das orientações do seu orientador, com prazos, status e vínculo com tarefas." />} />
-        <Route path="conferencia" element={<EmBreve secao="conferencia" titulo="Conferência final" descricao="Checklist editável para preparar a entrega do TCC." />} />
+        <Route path="conferencia" element={<Conferencia />} />
         <Route path="projeto" element={<EditarProjeto />} />
         <Route path="projeto/novo" element={<NovoProjeto />} />
         <Route path="dados" element={<Dados />} />
