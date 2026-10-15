@@ -6,6 +6,10 @@ import { db, type Fonte, type StatusLeitura } from '../../../data/db.ts';
 import { criarFonte, atualizarFonte, verificarDuplicatas, ErroDeValidacao, normalizarDadosFonte, type DadosFonte } from '../../../data/fontes.ts';
 import type { OrigemMetadados } from '../../../data/db.ts';
 import { PainelImportacao, type Importacao, type Modo } from './PainelImportacao.tsx';
+import { juntarPalavrasChave, sugerirTemasExistentes } from '../../../domain/palavrasChave.ts';
+import { buscarPorDoi, ErroDeImportacao } from '../../../integrations/metadados.ts';
+import { limparDoi } from '../../../domain/abnt/referencia.ts';
+import { Plus as Mais, Sparkles, Loader2 } from 'lucide-react';
 import { obterOuCriarTag } from '../../../data/tags.ts';
 import { ROTULO_TIPO, type Autor, type CampoBibliografico, type TipoPublicacao } from '../../../domain/tipos.ts';
 import { useProjetoObrigatorio } from '../../projetoAtivo.tsx';
@@ -162,6 +166,34 @@ function EditorAutores({ titulo, autores, aoMudar, erros, prefixoErro, dica }: {
   );
 }
 
+const separarPalavras = (s: string) => s.split(/[;\n]/).map((p) => p.trim()).filter(Boolean);
+
+function SugestoesTemas({ existentes, externos, aoAdicionar }: { existentes: string[]; externos: string[]; aoAdicionar: (t: string) => void }) {
+  if (!existentes.length && !externos.length) return null;
+  const chip = (t: string, externo: boolean) => (
+    <button key={t} type="button" onClick={() => aoAdicionar(t)} aria-label={`Adicionar tema ${t}`} className={cx('inline-flex items-center gap-1 rounded border border-dashed px-2 py-0.5 text-xs transition-colors', externo ? 'border-borda-forte text-cinza-600 hover:border-acao-600 hover:text-acao-700' : 'border-acao-600/40 bg-acao-50 text-acao-700 hover:border-acao-600')}>
+      <Mais size={12} /> {t}
+    </button>
+  );
+  return (
+    <div className="flex flex-col gap-1.5 rounded-md bg-fundo px-3 py-2.5">
+      {existentes.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="flex items-center gap-1 text-xs text-cinza-600"><Sparkles size={13} className="text-acao-600" /> Seus temas que combinam com esta fonte:</span>
+          {existentes.map((t) => chip(t, false))}
+        </div>
+      )}
+      {externos.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-xs text-cinza-600">Tópicos do OpenAlex (em inglês):</span>
+          {externos.map((t) => chip(t, true))}
+        </div>
+      )}
+      <p className="text-[11px] text-cinza-500">Clique para adicionar. Nada é aplicado sem você escolher.</p>
+    </div>
+  );
+}
+
 function Secao({ titulo, children, descricao }: { titulo: string; children: ReactNode; descricao?: string }) {
   return (
     <Cartao className="p-5 sm:p-6">
@@ -190,6 +222,9 @@ export function FormularioFonte() {
   const [importados, setImportados] = useState<Record<string, string>>({});
   const [origem, setOrigem] = useState<OrigemMetadados | null>(null);
   const [versaoForm, setVersaoForm] = useState(0);
+  const [origemPalavras, setOrigemPalavras] = useState<'autores' | 'openalex' | null>(null);
+  const [temasExternos, setTemasExternos] = useState<string[]>([]);
+  const [buscandoAssuntos, setBuscandoAssuntos] = useState(false);
   const [erros, setErros] = useState<Record<string, string>>({});
   const [salvando, setSalvando] = useState(false);
   const [duplicatas, setDuplicatas] = useState<{ fonte: Fonte; motivo: string }[] | null>(null);
@@ -249,8 +284,20 @@ export function FormularioFonte() {
     return status;
   }
 
-  function aplicarImportacao({ resultado, url, modo }: Importacao) {
+  function aplicarImportacao({ resultado, url, modo, palavrasChaveDosAutores = [] }: Importacao) {
     if (!e) return;
+    const palavrasImportadas = palavrasChaveDosAutores.length ? palavrasChaveDosAutores : (resultado?.palavrasChave ?? []);
+    const preencherPalavras = !e.palavrasChave.trim() && palavrasImportadas.length > 0;
+    if (preencherPalavras) setOrigemPalavras(palavrasChaveDosAutores.length ? 'autores' : 'openalex');
+    setTemasExternos(resultado?.temas ?? []);
+    if (!resultado && !url) {
+      // PDF sem DOI: aproveita só as palavras-chave dos autores, sem mexer no resto do formulário.
+      if (palavrasImportadas.length) {
+        setE({ ...e, palavrasChave: juntarPalavrasChave(separarPalavras(e.palavrasChave), palavrasImportadas).join('; ') });
+        if (!e.palavrasChave.trim()) setOrigemPalavras('autores');
+      }
+      return;
+    }
     const hoje = hojeIso();
     const base = estadoInicial(undefined, nomesTags);
     const novo: Estado = { ...base, tags: e.tags, statusLeitura: e.statusLeitura, observacoes: e.observacoes, palavrasChave: e.palavrasChave };
@@ -272,6 +319,7 @@ export function FormularioFonte() {
       novo.url = url;
       novo.dataAcesso = hoje;
     }
+    if (preencherPalavras) novo.palavrasChave = palavrasImportadas.join('; ');
     // Guarda o valor importado de cada campo, já no formato salvo
     const norm = normalizarDadosFonte(montarDados(novo, [])) as unknown as Record<string, unknown>;
     const marcados: Record<string, string> = {};
@@ -283,6 +331,25 @@ export function FormularioFonte() {
     setE(novo);
     setErros({});
     setVersaoForm((v) => v + 1);
+  }
+
+  async function buscarAssuntosPeloDoi() {
+    if (!e) return;
+    setBuscandoAssuntos(true);
+    try {
+      const r = await buscarPorDoi(e.doi);
+      const atuais = separarPalavras(e.palavrasChave);
+      const novas = juntarPalavrasChave(atuais, r.palavrasChave);
+      setE({ ...e, palavrasChave: novas.join('; ') });
+      setTemasExternos(r.temas);
+      if (!atuais.length && r.palavrasChave.length) setOrigemPalavras('openalex');
+      const acrescentadas = novas.length - atuais.length;
+      avisar(acrescentadas || r.temas.length ? 'sucesso' : 'erro', acrescentadas ? `${acrescentadas} palavra(s)-chave encontrada(s) no OpenAlex.` : r.temas.length ? 'Nenhuma palavra-chave nova; veja os tópicos sugeridos.' : 'O OpenAlex não informou palavras-chave para este DOI.');
+    } catch (err) {
+      avisar('erro', err instanceof ErroDeImportacao ? err.message : 'Não foi possível buscar agora.');
+    } finally {
+      setBuscandoAssuntos(false);
+    }
   }
 
   async function salvar(confirmouDuplicata = false) {
@@ -414,8 +481,28 @@ export function FormularioFonte() {
           <Campo rotulo="Temas e tags" id="tags" dica="Use para agrupar fontes por assunto. Ex.: Comunicação, Segurança do paciente.">
             <EditorTags tags={e.tags} aoMudar={(tags) => set({ tags })} sugestoes={[...nomesTags.values()]} />
           </Campo>
-          <Campo rotulo="Palavras-chave da publicação" id="palavras" dica="Separe com ponto e vírgula.">
-            <Entrada id="palavras" value={e.palavrasChave} onChange={(ev) => set({ palavrasChave: ev.target.value })} placeholder="Ex.: radioterapia; humanização; enfermagem" />
+          <SugestoesTemas
+            existentes={sugerirTemasExistentes({ titulo: e.titulo, subtitulo: e.subtitulo, palavrasChave: separarPalavras(e.palavrasChave) }, [...nomesTags.values()]).filter((t) => !e.tags.some((x) => x.toLowerCase() === t.toLowerCase()))}
+            externos={temasExternos.filter((t) => !e.tags.some((x) => x.toLowerCase() === t.toLowerCase()))}
+            aoAdicionar={(t) => set({ tags: [...e.tags, t] })}
+          />
+          <Campo
+            rotulo="Palavras-chave da publicação"
+            id="palavras"
+            dica={
+              origemPalavras === 'autores' ? 'Lidas do PDF: são as palavras-chave escritas pelos autores. Confira.'
+              : origemPalavras === 'openalex' ? 'Vindas do OpenAlex: geradas automaticamente (em geral em inglês). Ajuste se quiser.'
+              : 'Separe com ponto e vírgula.'
+            }
+          >
+            <div className="flex gap-2">
+              <Entrada id="palavras" value={e.palavrasChave} onChange={(ev) => { set({ palavrasChave: ev.target.value }); }} placeholder="Ex.: radioterapia; humanização; enfermagem" />
+              {/^10\.\d{4,9}\/\S+$/.test(limparDoi(e.doi)) && (
+                <Botao onClick={buscarAssuntosPeloDoi} disabled={buscandoAssuntos} className="shrink-0" title="Busca palavras-chave e tópicos no OpenAlex pelo DOI">
+                  {buscandoAssuntos ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />} Buscar pelo DOI
+                </Botao>
+              )}
+            </div>
           </Campo>
           <Campo rotulo="Status de leitura" id="status" className="sm:w-56">
             <Selecao id="status" value={e.statusLeitura} onChange={(ev) => set({ statusLeitura: ev.target.value as StatusLeitura })}>

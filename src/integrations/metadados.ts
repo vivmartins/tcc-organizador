@@ -18,6 +18,10 @@ export interface ResultadoImportacao {
   /** Campos preenchidos e de qual serviço vieram. */
   origemDosCampos: Partial<Record<CampoBibliografico | 'tipo', FonteDeDados>>;
   servicos: FonteDeDados[];
+  /** Palavras-chave do OpenAlex (geradas automaticamente, em geral em inglês). */
+  palavrasChave: string[];
+  /** Tópicos do OpenAlex, para sugerir temas (em inglês). */
+  temas: string[];
 }
 
 export class ErroDeImportacao extends Error {}
@@ -173,6 +177,29 @@ interface ObraOpenAlex {
   authorships?: { author?: { display_name?: string | null } | null; raw_author_name?: string | null }[];
   primary_location?: { source?: { display_name?: string | null; type?: string | null; host_organization_name?: string | null } | null } | null;
   biblio?: { volume?: string | null; issue?: string | null; first_page?: string | null; last_page?: string | null } | null;
+  keywords?: { display_name?: string | null; score?: number | null }[] | null;
+  primary_topic?: TopicoOpenAlex | null;
+  topics?: TopicoOpenAlex[] | null;
+}
+interface TopicoOpenAlex { display_name?: string | null; score?: number | null; subfield?: { display_name?: string | null } | null }
+
+/** Palavras-chave (as mais relevantes) e tópicos do OpenAlex. */
+export function assuntosOpenAlex(o: ObraOpenAlex): { palavrasChave: string[]; temas: string[] } {
+  const palavrasChave = (o.keywords ?? [])
+    .filter((k) => (k.score ?? 0) >= 0.3)
+    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+    .map((k) => limparTexto(k.display_name))
+    .filter((k): k is string => !!k)
+    .slice(0, 8);
+  const temas: string[] = [];
+  const add = (t?: string | null) => {
+    const l = limparTexto(t);
+    if (l && !temas.some((x) => x.toLowerCase() === l.toLowerCase())) temas.push(l);
+  };
+  add(o.primary_topic?.subfield?.display_name);
+  add(o.primary_topic?.display_name);
+  for (const t of o.topics ?? []) if ((t.score ?? 0) >= 0.9) add(t.display_name);
+  return { palavrasChave, temas: temas.slice(0, 4) };
 }
 
 export function converterOpenAlex(o: ObraOpenAlex): Importado {
@@ -227,7 +254,7 @@ export function combinar(crossref: Importado | null, openalex: Importado | null)
     const neutros = Object.fromEntries(Object.entries(openalex).filter(([k]) => !['tipo', 'veiculo', 'editora'].includes(k))) as Importado;
     aplicar(neutros, 'openalex');
   }
-  return { dados, origemDosCampos, servicos };
+  return { dados, origemDosCampos, servicos, palavrasChave: [], temas: [] };
 }
 
 async function obterJson(buscar: Buscar, url: string): Promise<unknown | null> {
@@ -258,6 +285,7 @@ export async function buscarPorDoi(doiDigitado: string, buscar: Buscar = (u) => 
     throw new ErroDeImportacao('Nenhum dado encontrado para esse DOI no Crossref nem no OpenAlex. Confira o DOI ou preencha manualmente.');
   }
   const resultado = combinar(crossref, openalex);
+  if (oa.status === 'fulfilled' && oa.value) Object.assign(resultado, assuntosOpenAlex(oa.value as ObraOpenAlex));
   resultado.dados.doi = resultado.dados.doi ?? doi;
   return resultado;
 }

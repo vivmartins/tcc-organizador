@@ -1,4 +1,4 @@
-import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { HashRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { ProvedorAvisos } from './ui/componentes/dialogos.tsx';
 import { ProvedorProjeto, useProjeto } from './ui/projetoAtivo.tsx';
 import { Layout } from './ui/layout/Layout.tsx';
@@ -14,6 +14,12 @@ import { ComoFunciona } from './ui/ajuda/ComoFunciona.tsx';
 import { Planejamento } from './ui/paginas/planejamento/Planejamento.tsx';
 import { Conferencia } from './ui/paginas/Conferencia.tsx';
 
+/** Cada navegação para "Cadastrar fonte" começa com um formulário limpo. */
+function NovaFonte() {
+  const { key, search } = useLocation();
+  return <FormularioFonte key={`nova-${key}-${search}`} />;
+}
+
 function Rotas() {
   const { carregando, projeto } = useProjeto();
   if (carregando) return null;
@@ -23,7 +29,7 @@ function Rotas() {
       <Route element={<Layout />}>
         <Route index element={<VisaoGeral />} />
         <Route path="biblioteca" element={<Biblioteca />} />
-        <Route path="biblioteca/nova" element={<FormularioFonte key="nova" />} />
+        <Route path="biblioteca/nova" element={<NovaFonte />} />
         <Route path="biblioteca/:id" element={<PaginaFonte />} />
         <Route path="biblioteca/:id/editar" element={<FormularioFonte key="editar" />} />
         <Route path="fichamentos" element={<Fichamentos />} />

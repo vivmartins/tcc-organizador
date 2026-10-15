@@ -164,3 +164,29 @@ describe('busca por DOI', () => {
     await expect(buscarPorDoi('10.1590/x', async () => resposta(500))).rejects.toBeInstanceOf(ErroDeImportacao);
   });
 });
+
+describe('assuntos do OpenAlex', () => {
+  const OBRA = {
+    keywords: [
+      { display_name: 'Radiotherapy', score: 0.62 },
+      { display_name: 'Humanization', score: 0.48 },
+      { display_name: 'Pouco relevante', score: 0.1 },
+    ],
+    primary_topic: { display_name: 'Patient Care in Oncology', score: 0.98, subfield: { display_name: 'Oncology' } },
+    topics: [{ display_name: 'Patient Care in Oncology', score: 0.98 }, { display_name: 'Nursing Communication', score: 0.95 }, { display_name: 'Algo distante', score: 0.4 }],
+  };
+
+  test('palavras-chave relevantes e tópicos principais, sem repetir', async () => {
+    const { assuntosOpenAlex } = await import('./metadados.ts');
+    expect(assuntosOpenAlex(OBRA)).toEqual({
+      palavrasChave: ['Radiotherapy', 'Humanization'],
+      temas: ['Oncology', 'Patient Care in Oncology', 'Nursing Communication'],
+    });
+  });
+
+  test('a busca por DOI devolve os assuntos junto com os dados', async () => {
+    const r = await buscarPorDoi('10.1590/x', async (u) => (u.includes('crossref') ? new Response(null, { status: 404 }) : new Response(JSON.stringify({ ...OPENALEX_ARTIGO, ...OBRA }), { status: 200 })));
+    expect(r.palavrasChave).toEqual(['Radiotherapy', 'Humanization']);
+    expect(r.temas[0]).toBe('Oncology');
+  });
+});

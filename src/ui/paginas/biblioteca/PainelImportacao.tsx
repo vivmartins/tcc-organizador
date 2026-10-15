@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Download, FileText, Link2, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { buscarPorDoi, ErroDeImportacao, type ResultadoImportacao } from '../../../integrations/metadados.ts';
-import { encontrarDoiNoPdf } from '../../../integrations/pdf.ts';
+import { lerPdf } from '../../../integrations/pdf.ts';
 import { extrairDoi } from '../../../domain/duplicatas.ts';
 import { Botao, Cartao, Entrada, cx } from '../../componentes/base.tsx';
 
@@ -12,6 +12,8 @@ export interface Importacao {
   /** Link digitado, quando a importação foi por link. */
   url?: string;
   modo: Modo;
+  /** Palavras-chave escritas pelos autores, lidas do PDF. */
+  palavrasChaveDosAutores?: string[];
 }
 
 const ROTULO_SERVICO = { crossref: 'Crossref', openalex: 'OpenAlex' };
@@ -63,13 +65,17 @@ export function PainelImportacao({ modoInicial = 'doi', aoImportar }: { modoInic
     setMensagem(null);
     setCarregando('Lendo o PDF…');
     try {
-      const doi = await encontrarDoiNoPdf(f);
+      const { doi, palavrasChave } = await lerPdf(f);
       if (!doi) {
-        setMensagem({ tipo: 'aviso', texto: `Não encontramos um DOI em “${f.name}”. Preencha os dados manualmente abaixo (o título costuma estar na primeira página).` });
+        if (palavrasChave.length) aoImportar({ modo: 'pdf', resultado: null, palavrasChaveDosAutores: palavrasChave });
+        setMensagem({
+          tipo: 'aviso',
+          texto: `Não encontramos um DOI em “${f.name}”. ${palavrasChave.length ? 'Encontramos as palavras-chave dos autores e as colocamos em “Palavras-chave”; complete os demais dados abaixo.' : 'Preencha os dados manualmente abaixo (o título costuma estar na primeira página).'}`,
+        });
         return;
       }
       setValor(doi);
-      await importarDoi(doi, { modo: 'pdf' });
+      await importarDoi(doi, { modo: 'pdf', palavrasChaveDosAutores: palavrasChave });
     } catch (e) {
       setMensagem({ tipo: 'erro', texto: (e as Error).message });
     } finally {

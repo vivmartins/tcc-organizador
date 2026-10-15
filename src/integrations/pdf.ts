@@ -2,10 +2,17 @@
 // A biblioteca pdf.js só é carregada quando alguém importa um PDF, para não pesar o app.
 
 import { extrairDoi } from '../domain/duplicatas.ts';
+import { extrairPalavrasChave } from '../domain/palavrasChave.ts';
+
+export interface LeituraPdf {
+  doi: string | null;
+  /** Palavras-chave escritas pelos autores (linha "Palavras-chave:", "Descritores:" ou "Keywords:"). */
+  palavrasChave: string[];
+}
 
 export const TAMANHO_MAXIMO_PDF = 50 * 1024 * 1024;
 
-export async function encontrarDoiNoPdf(arquivo: File, paginas = 3): Promise<string | null> {
+export async function lerPdf(arquivo: File, paginas = 3): Promise<LeituraPdf> {
   if (arquivo.type && arquivo.type !== 'application/pdf') throw new Error('Escolha um arquivo PDF.');
   if (arquivo.size > TAMANHO_MAXIMO_PDF) throw new Error('O PDF é grande demais (limite de 50 MB).');
   // Versão "legacy": inclui adaptações para navegadores que ainda não têm os recursos mais novos de JavaScript.
@@ -21,24 +28,21 @@ export async function encontrarDoiNoPdf(arquivo: File, paginas = 3): Promise<str
     throw new Error('Não foi possível abrir este PDF. Ele pode estar protegido ou danificado.');
   }
   try {
-    // 1) Metadados do arquivo (algumas editoras gravam o DOI ali)
+    let doi: string | null = null;
+    let palavrasChave: string[] = [];
+    // 1) Metadados do arquivo (algumas editoras gravam o DOI e as palavras-chave ali)
     const info = (await doc.getMetadata().catch(() => null))?.info as Record<string, unknown> | undefined;
-    for (const v of Object.values(info ?? {})) {
-      if (typeof v === 'string') {
-        const doi = extrairDoi(v);
-        if (doi) return doi;
-      }
-    }
-    // 2) Texto das primeiras páginas
-    for (let n = 1; n <= Math.min(paginas, doc.numPages); n++) {
+    for (const v of Object.values(info ?? {})) if (typeof v === 'string') doi ??= extrairDoi(v);
+    // 2) Texto das primeiras páginas (com as quebras de linha, que ajudam a separar as seções)
+    for (let n = 1; n <= Math.min(paginas, doc.numPages) && (!doi || palavrasChave.length === 0); n++) {
       const pagina = await doc.getPage(n);
       const conteudo = await pagina.getTextContent();
-      const texto = conteudo.items.map((i) => ('str' in i ? i.str : '')).join(' ');
+      const texto = conteudo.items.map((i) => ('str' in i ? i.str + (i.hasEOL ? '\n' : '') : '')).join(' ').replace(/ +\n/g, '\n');
       // junta quebras dentro do DOI ("10.1590/ s0034...") que a diagramação às vezes cria
-      const doi = extrairDoi(texto) ?? extrairDoi(texto.replace(/(10\.\d{4,9}\/)\s+/g, '$1'));
-      if (doi) return doi;
+      doi ??= extrairDoi(texto) ?? extrairDoi(texto.replace(/(10\.\d{4,9}\/)\s+/g, '$1'));
+      if (palavrasChave.length === 0) palavrasChave = extrairPalavrasChave(texto);
     }
-    return null;
+    return { doi, palavrasChave };
   } finally {
     void tarefa.destroy();
   }
