@@ -50,7 +50,7 @@ const SECOES = [
 export function Inicio() {
   return (
     <div className="max-w-4xl">
-      <p className="text-sm font-semibold text-acao-700">Gestão do trabalho de conclusão de curso</p>
+      <p className="text-sm font-semibold text-acao-700">Gestão do Trabalho de Conclusão de Curso</p>
       <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-marinho-900 sm:text-4xl">Boas-vindas ao Organizador de TCC</h1>
       <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-cinza-600">
         Fontes, fichamentos, referências ABNT, prazos e orientações num só lugar. Dê uma olhada em cada seção e, quando quiser, comece o seu projeto.
