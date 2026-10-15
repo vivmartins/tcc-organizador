@@ -1,25 +1,36 @@
 @import 'tailwindcss';
 
-/* Paleta do projeto: fundo claro, azul-marinho para texto, azul suave para ações,
-   verde discreto para estados positivos, cinza para informações secundárias. */
+/* Visual "moderno": fundo claro levemente azulado, texto quase preto, roxo-anil para ações,
+   menu lateral escuro e cantos bem arredondados. Fonte: Plus Jakarta Sans (servida pelo próprio app). */
 @theme {
-  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
-  --color-fundo: #f7f8fa;
+  --color-fundo: #f4f5fa;
   --color-superficie: #ffffff;
-  --color-borda: #e4e7ec;
-  --color-borda-forte: #cfd4dc;
+  --color-borda: #e6e8f0;
+  --color-borda-forte: #d3d7e3;
 
-  --color-marinho-900: #14213d;
-  --color-marinho-700: #2b3a5c;
-  --color-cinza-600: #5b6577;
-  --color-cinza-500: #7a8394;
-  --color-cinza-100: #eef0f4;
+  --color-marinho-900: #0f1222;
+  --color-marinho-700: #2a2f45;
+  --color-cinza-600: #5d6275;
+  --color-cinza-500: #737889;
+  --color-cinza-100: #eef0f6;
 
-  --color-acao-600: #2f5fd0;
-  --color-acao-700: #254db0;
-  --color-acao-50: #edf2fd;
-  --color-acao-100: #dbe5fb;
+  --color-acao-600: #5b4ee8;
+  --color-acao-700: #4a3dd6;
+  --color-acao-50: #f0eefe;
+  --color-acao-100: #e0dcfc;
+
+  /* menu lateral escuro */
+  --color-menu: #0f1222;
+  --color-menu-texto: #c4c9dc;
+  --color-menu-destaque: #8b80ff;
+
+  --radius-sm: 8px;
+  --radius: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
 
   --color-sucesso-700: #23704a;
   --color-sucesso-50: #eaf6ef;
@@ -35,7 +46,6 @@
   }
   body {
     @apply bg-fundo text-marinho-900 antialiased;
-    font-feature-settings: 'cv11', 'ss01';
   }
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-acao-600;

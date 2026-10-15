@@ -43,16 +43,16 @@ function SeletorProjeto({ aoNavegar }: { aoNavegar?: () => void }) {
         onClick={() => setAberto((a) => !a)}
         aria-haspopup="listbox"
         aria-expanded={aberto}
-        className="flex w-full items-center gap-2.5 rounded-md border border-borda bg-superficie px-2.5 py-2 text-left hover:border-borda-forte"
+        className="flex w-full items-center gap-2.5 rounded-md border border-white/15 bg-white/5 px-2.5 py-2 text-left text-white hover:border-white/30"
       >
-        <span className="flex size-7 shrink-0 items-center justify-center rounded bg-marinho-900 text-xs font-semibold text-white">
+        <span className="flex size-7 shrink-0 items-center justify-center rounded bg-acao-600 text-xs font-semibold text-white">
           {projeto?.nome.trim().charAt(0).toUpperCase()}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[11px] uppercase tracking-wide text-cinza-500">Projeto</span>
+          <span className="block text-[11px] uppercase tracking-wide text-menu-texto">Projeto</span>
           <span className="block truncate text-sm font-medium">{projeto?.nome}</span>
         </span>
-        <ChevronsUpDown size={15} className="shrink-0 text-cinza-500" />
+        <ChevronsUpDown size={15} className="shrink-0 text-menu-texto" />
       </button>
       {aberto && (
         <div role="listbox" className="absolute inset-x-0 top-full z-30 mt-1 overflow-hidden rounded-md border border-borda bg-superficie py-1 shadow-lg">
@@ -90,12 +90,12 @@ function Navegacao({ aoNavegar }: { aoNavegar?: () => void }) {
   const item = ({ isActive }: { isActive: boolean }) =>
     cx(
       'flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors',
-      isActive ? 'bg-acao-50 font-medium text-acao-700' : 'text-marinho-700 hover:bg-cinza-100 hover:text-marinho-900',
+      isActive ? 'bg-white/10 font-semibold text-white' : 'text-menu-texto hover:bg-white/5 hover:text-white',
     );
   return (
     <div className="flex h-full flex-col gap-5 p-4">
-      <div className="flex items-center gap-2 px-1 text-marinho-900">
-        <BookMarked size={20} className="text-acao-600" />
+      <div className="flex items-center gap-2 px-1 text-white">
+        <BookMarked size={20} className="text-menu-destaque" />
         <span className="text-[15px] font-semibold tracking-tight">Organizador de TCC</span>
       </div>
       <SeletorProjeto aoNavegar={aoNavegar} />
@@ -128,7 +128,7 @@ export function Layout() {
   return (
     <div className="min-h-dvh lg:pl-64">
       {/* Desktop: menu lateral fixo */}
-      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-borda bg-fundo lg:block">
+      <aside className="fixed inset-y-0 left-0 hidden w-64 bg-menu lg:block">
         <Navegacao />
       </aside>
 
@@ -144,8 +144,8 @@ export function Layout() {
       {menuAberto && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-marinho-900/30" onClick={() => setMenuAberto(false)} />
-          <aside className="absolute inset-y-0 left-0 w-72 max-w-[85%] overflow-y-auto bg-fundo shadow-xl">
-            <button onClick={() => setMenuAberto(false)} className="absolute right-3 top-3.5 rounded p-1.5 hover:bg-cinza-100" aria-label="Fechar menu">
+          <aside className="absolute inset-y-0 left-0 w-72 max-w-[85%] overflow-y-auto bg-menu shadow-xl">
+            <button onClick={() => setMenuAberto(false)} className="absolute right-3 top-3.5 rounded p-1.5 text-menu-texto hover:bg-white/10 hover:text-white" aria-label="Fechar menu">
               <X size={18} />
             </button>
             <Navegacao aoNavegar={() => setMenuAberto(false)} />
