@@ -165,7 +165,7 @@ export function Layout() {
         </div>
       )}
 
-      <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-8 sm:py-8">
+      <main className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-8 sm:py-8">
         <AvisoExemplo />
         <Outlet />
       </main>
