@@ -3,7 +3,11 @@
 Aplicação web para organizar a pesquisa bibliográfica e o desenvolvimento do TCC:
 biblioteca de fontes com referências ABNT, fichamentos, planejamento, orientações e conferência final.
 
-**Endereço:** https://vivmartins.github.io/tcc-organizador/
+**Endereços:**
+- Página de apresentação: https://vivmartins.github.io/tcc-organizador/
+- Plataforma (direto): https://vivmartins.github.io/tcc-organizador/app/
+
+Endereços antigos da plataforma (com `#/…`) são levados automaticamente para `/app/`.
 
 ## Como os dados são guardados
 
@@ -57,7 +61,7 @@ Requer [Node.js](https://nodejs.org) 20 ou mais recente.
 
 ```bash
 npm install        # instala as bibliotecas (uma vez)
-npm run dev        # abre em http://localhost:5173 e atualiza ao salvar o código
+npm run dev        # apresentação em http://localhost:5173 e plataforma em http://localhost:5173/app/
 ```
 
 ## Testar
@@ -97,6 +101,8 @@ src/
   integrations/  serviços externos: Crossref/OpenAlex, leitura de PDF (pdf.js), tradução,
                  leitura do arquivo do TCC (.docx e PDF)
   ui/            telas e componentes (React + Tailwind), textos de ajuda em ui/ajuda/textos.ts
+index.html       página de apresentação (HTML estático; imagens em public/apresentacao/)
+app/index.html   entrada da plataforma
 supabase/        modelo de dados para uma possível sincronização em nuvem (não usado)
 ```
 

@@ -1,15 +1,271 @@
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Organize fontes, fichamentos, referências ABNT e o planejamento do seu TCC. Seus dados ficam só no seu navegador." />
-    <meta name="theme-color" content="#f7f8fa" />
-    <title>Organizador de TCC</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+<meta name="description" content="Organizador de TCC: fontes, fichamentos, referências ABNT, prazos, orientações e auditoria de citações num só lugar. Gratuito, sem cadastro e com os dados só no seu navegador." />
+<meta name="theme-color" content="#0b0e1c" />
+<title>Organizador de TCC</title>
+<script>
+  // Endereços antigos do app (com #/...) continuam funcionando: vão para a plataforma.
+  if (location.hash.startsWith('#/')) location.replace('./app/' + location.hash);
+</script>
+<script type="module" src="/src/apresentacao.ts"></script>
+<style>
+  body { margin: 0; background: #f4f5fa; }
+  a { color: #5b4ee8; } a:hover { color: #4a3dd6; }
+  html { scroll-behavior: smooth; }
+</style>
+</head>
+<body>
+<div style="font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #0f1222; background: #f4f5fa; line-height: 1.55; overflow-x: hidden">
+
+<!-- Topo -->
+<header style="background: #0b0e1c">
+<nav style="max-width: 1180px; margin: 0 auto; padding: 20px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+<a href="#inicio" style="display: flex; align-items: center; gap: 10px; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 17px">
+<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#8b80ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"></path><path d="M9 7h6"></path><path d="M9 11h4"></path></svg>
+Organizador de TCC
+</a>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+<a href="#recursos" style="color: #aab0cc; text-decoration: none; font-size: 15px; padding: 12px 14px">Recursos</a>
+<a href="#privacidade" style="color: #aab0cc; text-decoration: none; font-size: 15px; padding: 12px 14px">Privacidade</a>
+<a href="#perguntas" style="color: #aab0cc; text-decoration: none; font-size: 15px; padding: 12px 14px">Perguntas</a>
+<a href="./app/" style="background: #ffffff; color: #0f1222; text-decoration: none; font-weight: 600; font-size: 15px; padding: 11px 18px; border-radius: 999px">Abrir o app</a>
+</div>
+</nav>
+
+<!-- Hero -->
+<section id="inicio" style="max-width: 1180px; margin: 0 auto; padding: 56px 24px 0; display: flex; flex-direction: column; align-items: center; text-align: center">
+<p style="margin: 0 0 18px; display: inline-flex; align-items: center; gap: 8px; background: rgba(139,128,255,0.16); color: #aab0cc; font-size: 14px; font-weight: 600; padding: 7px 14px; border-radius: 999px">Gestão do trabalho de conclusão de curso</p>
+<h1 style="margin: 0; max-width: 880px; font-weight: 800; letter-spacing: -0.03em; font-size: clamp(40px, 6.2vw, 76px); line-height: 1.02; letter-spacing: -0.04em; color: #ffffff">Seu TCC organizado,<br><span style="color: #8b80ff">do primeiro artigo à entrega.</span></h1>
+<p style="margin: 22px 0 0; max-width: 640px; font-size: clamp(17px, 2vw, 20px); color: #aab0cc">Fontes, fichamentos, referências ABNT, prazos e orientações num só lugar. E, antes de entregar, uma auditoria que confere suas citações por você. Gratuito, sem cadastro e sem servidor.</p>
+<div style="margin-top: 32px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px">
+<a href="./app/" style="background: #5b4ee8; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 17px; padding: 15px 26px; border-radius: 999px">Começar meu TCC agora</a>
+<a href="#recursos" style="border: 1px solid rgba(170,176,204,0.4); color: #ffffff; text-decoration: none; font-weight: 600; font-size: 17px; padding: 14px 24px; border-radius: 999px">Ver o que ele faz</a>
+</div>
+<div style="margin-top: 56px; width: 100%; max-width: 1080px; border-radius: 20px 14px 0 0; overflow: hidden; background: #ffffff; box-shadow: 0 0 120px rgba(91,78,232,0.35); border: 1px solid rgba(255,255,255,0.12); border-bottom: 0">
+<div style="height: 34px; background: #eef0f4; display: flex; align-items: center; gap: 7px; padding: 0 14px" aria-hidden="true">
+<span style="width: 11px; height: 11px; border-radius: 50%; background: #cfd4dc"></span><span style="width: 11px; height: 11px; border-radius: 50%; background: #cfd4dc"></span><span style="width: 11px; height: 11px; border-radius: 50%; background: #cfd4dc"></span>
+</div>
+<img src="./apresentacao/visao.jpg" alt="Tela Visão geral: total de fontes, fichamentos, tarefas em andamento, prazo de entrega e listas de fontes e fichamentos recentes" style="display: block; width: 100%; height: auto">
+</div>
+</section>
+</header>
+
+<!-- Dor -->
+<section style="max-width: 1180px; margin: 0 auto; padding: 96px 24px 24px">
+<h2 style="margin: 0; text-align: center; font-weight: 800; letter-spacing: -0.03em; font-size: clamp(30px, 4vw, 44px); line-height: 1.15">Conhece essa cena?</h2>
+<div style="margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px">
+<div style="background: #ffffff; border: 1px solid #e6e8f0; border-radius: 20px; padding: 26px">
+<p style="margin: 0; font-size: 18px; font-weight: 700">Artigos espalhados</p>
+<p style="margin: 8px 0 0; color: #5d6275">PDFs na pasta de downloads, links em vinte abas e aquele texto ótimo que você não lembra onde salvou.</p>
+</div>
+<div style="background: #ffffff; border: 1px solid #e6e8f0; border-radius: 20px; padding: 26px">
+<p style="margin: 0; font-size: 18px; font-weight: 700">Citação sem página</p>
+<p style="margin: 8px 0 0; color: #5d6275">Você copiou o trecho perfeito, mas agora não sabe de qual autor era nem em que página estava.</p>
+</div>
+<div style="background: #ffffff; border: 1px solid #e6e8f0; border-radius: 20px; padding: 26px">
+<p style="margin: 0; font-size: 18px; font-weight: 700">Véspera da entrega</p>
+<p style="margin: 8px 0 0; color: #5d6275">Madrugada conferindo referência por referência, procurando se todo autor citado está na lista.</p>
+</div>
+</div>
+<p style="margin: 36px auto 0; max-width: 640px; text-align: center; font-size: 19px; font-weight: 600">O Organizador de TCC junta tudo isso num lugar só, e organiza o caminho para você.</p>
+</section>
+
+<!-- Recursos -->
+<section id="recursos" style="max-width: 1180px; margin: 0 auto; padding: 72px 24px; display: flex; flex-direction: column; gap: 96px">
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 48px">
+<div style="flex: 1 1 360px; min-width: 0">
+<p style="margin: 0; color: #5b4ee8; font-weight: 700; font-size: 14px; letter-spacing: 0.06em; text-transform: uppercase">Biblioteca e ABNT</p>
+<h3 style="margin: 10px 0 0; font-weight: 800; letter-spacing: -0.03em; font-size: clamp(28px, 3.4vw, 40px); line-height: 1.15">Cole o DOI, o link ou o PDF. A referência sai pronta.</h3>
+<p style="margin: 16px 0 0; color: #5d6275; font-size: 17px">O app busca os dados do artigo em bases acadêmicas abertas e monta a referência e a citação no padrão ABNT.</p>
+<ul style="margin: 20px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; font-size: 16px">
+<li style="display: flex; gap: 10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5b4ee8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px"><path d="M20 6 9 17l-5-5"></path></svg>Referência pela NBR 6023 e citação pela NBR 10520, prontas para copiar</li>
+<li style="display: flex; gap: 10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5b4ee8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px"><path d="M20 6 9 17l-5-5"></path></svg>Palavras-chave e temas sugeridos em português</li>
+<li style="display: flex; gap: 10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5b4ee8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px"><path d="M20 6 9 17l-5-5"></path></svg>Mostra o que falta conferir e nunca inventa um dado</li>
+</ul>
+</div>
+<div style="flex: 1 1 520px; min-width: 0; border-radius: 20px; overflow: hidden; border: 1px solid #e6e8f0; box-shadow: 0 20px 50px rgba(15,18,34,0.12)">
+<img loading="lazy" src="./apresentacao/referencia.jpg" alt="Página de uma fonte com a referência ABNT pronta para copiar e a lista do que conferir" style="display: block; width: 100%; height: auto">
+</div>
+</div>
+
+<div style="display: flex; flex-wrap: wrap-reverse; align-items: center; gap: 48px">
+<div style="flex: 1 1 520px; min-width: 0; border-radius: 20px; overflow: hidden; border: 1px solid #e6e8f0; box-shadow: 0 20px 50px rgba(15,18,34,0.12)">
+<img loading="lazy" src="./apresentacao/fichamentos.jpg" alt="Tela de fichamentos com citação direta, página, interpretação e capítulo do TCC" style="display: block; width: 100%; height: auto">
+</div>
+<div style="flex: 1 1 360px; min-width: 0">
+<p style="margin: 0; color: #5b4ee8; font-weight: 700; font-size: 14px; letter-spacing: 0.06em; text-transform: uppercase">Fichamentos</p>
+<h3 style="margin: 10px 0 0; font-weight: 800; letter-spacing: -0.03em; font-size: clamp(28px, 3.4vw, 40px); line-height: 1.15">Leia uma vez. Use na hora de escrever.</h3>
+<p style="margin: 16px 0 0; color: #5d6275; font-size: 17px">Guarde citações, paráfrases, ideias e dados de cada leitura, já ligados à fonte, à página e ao capítulo onde vão entrar.</p>
+<ul style="margin: 20px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; font-size: 16px">
+<li style="display: flex; gap: 10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5b4ee8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px"><path d="M20 6 9 17l-5-5"></path></svg>O trecho original fica sempre guardado, igualzinho ao do autor</li>
+<li style="display: flex; gap: 10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5b4ee8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px"><path d="M20 6 9 17l-5-5"></path></svg>Filtre por capítulo e encontre tudo o que vai usar em cada parte</li>
+<li style="display: flex; gap: 10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5b4ee8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px"><path d="M20 6 9 17l-5-5"></path></svg>Copie o trecho já com a citação, no formato (Silva; Souza, 2021, p. 47)</li>
+</ul>
+</div>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 48px">
+<div style="flex: 1 1 360px; min-width: 0">
+<p style="margin: 0; color: #5b4ee8; font-weight: 700; font-size: 14px; letter-spacing: 0.06em; text-transform: uppercase">Planejamento e orientações</p>
+<h3 style="margin: 10px 0 0; font-weight: 800; letter-spacing: -0.03em; font-size: clamp(28px, 3.4vw, 40px); line-height: 1.15">Prazos que você enxerga antes de virarem susto.</h3>
+<p style="margin: 16px 0 0; color: #5d6275; font-size: 17px">Divida o TCC em etapas e tarefas, veja o cronograma e acompanhe o progresso calculado pelo que você realmente concluiu.</p>
+<ul style="margin: 20px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 12px; font-size: 16px">
+<li style="display: flex; gap: 10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5b4ee8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px"><path d="M20 6 9 17l-5-5"></path></svg>Tarefas atrasadas e prazos da semana sempre à vista</li>
+<li style="display: flex; gap: 10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5b4ee8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px"><path d="M20 6 9 17l-5-5"></path></svg>Registre o que o orientador pediu e transforme em tarefa</li>
+<li style="display: flex; gap: 10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5b4ee8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px"><path d="M20 6 9 17l-5-5"></path></svg>Um planejamento sugerido para começar do zero</li>
+</ul>
+</div>
+<div style="flex: 1 1 520px; min-width: 0; border-radius: 20px; overflow: hidden; border: 1px solid #e6e8f0; box-shadow: 0 20px 50px rgba(15,18,34,0.12)">
+<img loading="lazy" src="./apresentacao/planejamento.jpg" alt="Tela de planejamento com progresso geral, tarefas atrasadas, próximos prazos e lista de tarefas" style="display: block; width: 100%; height: auto">
+</div>
+</div>
+</section>
+
+<!-- Auditoria: destaque -->
+<section style="background: #f0eefe; border-top: 1px solid #e0dcfc; border-bottom: 1px solid #e0dcfc">
+<div style="max-width: 1180px; margin: 0 auto; padding: 88px 24px; display: flex; flex-direction: column; align-items: center">
+<p style="margin: 0; background: #0f1222; color: #ffffff; font-weight: 700; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; padding: 6px 12px; border-radius: 999px">O diferencial</p>
+<h2 style="margin: 18px 0 0; max-width: 820px; text-align: center; font-weight: 800; letter-spacing: -0.03em; font-size: clamp(32px, 4.4vw, 52px); line-height: 1.1">Antes de entregar, uma revisão que ninguém faz à mão.</h2>
+<p style="margin: 18px 0 0; max-width: 680px; text-align: center; color: #2a2f45; font-size: 18px">Envie o arquivo do seu TCC em Word ou PDF. A Auditoria lê o texto e aponta o que vale conferir, comparando com as fontes e os fichamentos que você cadastrou.</p>
+<div style="margin-top: 44px; width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px">
+<div style="background: #ffffff; border-radius: 20px; padding: 22px">
+<p style="margin: 0; font-weight: 700; font-size: 17px">Citação sem referência</p>
+<p style="margin: 6px 0 0; color: #5d6275; font-size: 15px">Autor citado no texto que não aparece na lista, ou com o ano diferente.</p>
+</div>
+<div style="background: #ffffff; border-radius: 20px; padding: 22px">
+<p style="margin: 0; font-weight: 700; font-size: 17px">Referência esquecida</p>
+<p style="margin: 6px 0 0; color: #5d6275; font-size: 15px">Obra que está nas referências, mas nunca foi citada no trabalho.</p>
+</div>
+<div style="background: #ffffff; border-radius: 20px; padding: 22px">
+<p style="margin: 0; font-weight: 700; font-size: 17px">Citação direta diferente</p>
+<p style="margin: 6px 0 0; color: #5d6275; font-size: 15px">Palavra trocada em relação ao original, página faltando ou diferente do fichamento.</p>
+</div>
+<div style="background: #ffffff; border-radius: 20px; padding: 22px">
+<p style="margin: 0; font-weight: 700; font-size: 17px">Trecho copiado sem aspas</p>
+<p style="margin: 6px 0 0; color: #5d6275; font-size: 15px">Frases iguais ou muito próximas das suas fontes, para você reescrever ou citar.</p>
+</div>
+</div>
+<div style="margin-top: 44px; width: 100%; max-width: 1000px; border-radius: 20px; overflow: hidden; border: 1px solid #e0dcfc; box-shadow: 0 24px 60px rgba(15,18,34,0.16)">
+<img loading="lazy" src="./apresentacao/auditoria.jpg" alt="Resultado da auditoria mostrando uma citação direta com a palavra trocada: laterolateral no TCC, anteroposterior na fonte" style="display: block; width: 100%; height: auto">
+</div>
+<p style="margin: 20px 0 0; max-width: 680px; text-align: center; color: #5d6275; font-size: 14px">A auditoria mostra pontos para você conferir, não um veredito. Ela compara só com as fontes que você cadastrou e não substitui o detector de plágio da sua instituição.</p>
+</div>
+</section>
+
+<!-- Mais recursos -->
+<section style="max-width: 1180px; margin: 0 auto; padding: 88px 24px 24px">
+<h2 style="margin: 0; text-align: center; font-weight: 800; letter-spacing: -0.03em; font-size: clamp(30px, 4vw, 44px); line-height: 1.15">E mais um pouco</h2>
+<div style="margin-top: 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px">
+<div style="padding: 4px">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5b4ee8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg>
+<p style="margin: 12px 0 0; font-weight: 700; font-size: 17px">Visão geral do TCC</p>
+<p style="margin: 6px 0 0; color: #5d6275">Quantas fontes, fichas e tarefas, quanto falta para a entrega e o que você fez por último.</p>
+</div>
+<div style="padding: 4px">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5b4ee8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 2 2 4-4"></path><path d="m3 7 2 2 4-4"></path><path d="M13 6h8"></path><path d="M13 12h8"></path><path d="M13 18h8"></path></svg>
+<p style="margin: 12px 0 0; font-weight: 700; font-size: 17px">Conferência final</p>
+<p style="margin: 6px 0 0; color: #5d6275">Um checklist editável para a entrega, adaptado às regras da sua faculdade.</p>
+</div>
+<div style="padding: 4px">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5b4ee8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg>
+<p style="margin: 12px 0 0; font-weight: 700; font-size: 17px">Explicação em cada tela</p>
+<p style="margin: 6px 0 0; color: #5d6275">Cada seção mostra para que serve e como usar, em linguagem simples.</p>
+</div>
+<div style="padding: 4px">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5b4ee8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path></svg>
+<p style="margin: 12px 0 0; font-weight: 700; font-size: 17px">Backup automático</p>
+<p style="margin: 6px 0 0; color: #5d6275">No Chrome ou no Edge, o app salva uma cópia sozinho numa pasta do Google Drive.</p>
+</div>
+</div>
+</section>
+
+<!-- Privacidade -->
+<section id="privacidade" style="max-width: 1180px; margin: 0 auto; padding: 72px 24px">
+<div style="background: #0f1222; color: #ffffff; border-radius: 20px; padding: clamp(32px, 5vw, 56px); display: flex; flex-wrap: wrap; gap: 40px; align-items: center">
+<div style="flex: 1 1 380px; min-width: 0">
+<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#8b80ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
+<h2 style="margin: 16px 0 0; font-weight: 800; letter-spacing: -0.03em; font-size: clamp(30px, 4vw, 44px); line-height: 1.1">Seus dados são só seus.</h2>
+<p style="margin: 14px 0 0; color: #aab0cc; font-size: 18px">Não existe servidor guardando o seu TCC. Tudo fica no navegador do seu computador, e nem quem criou o app tem acesso.</p>
+</div>
+<ul style="flex: 1 1 340px; min-width: 0; margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 16px; font-size: 16px; color: #e3e6f3">
+<li style="display: flex; gap: 12px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b80ff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 3px"><path d="M20 6 9 17l-5-5"></path></svg>Sem conta, sem senha, sem e-mail</li>
+<li style="display: flex; gap: 12px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b80ff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 3px"><path d="M20 6 9 17l-5-5"></path></svg>O arquivo do TCC é lido na hora e não é guardado</li>
+<li style="display: flex; gap: 12px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b80ff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 3px"><path d="M20 6 9 17l-5-5"></path></svg>Backup em arquivo para levar a outro computador</li>
+<li style="display: flex; gap: 12px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8b80ff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 3px"><path d="M20 6 9 17l-5-5"></path></svg>Gratuito, sem anúncios</li>
+</ul>
+</div>
+</section>
+
+<!-- Como começar -->
+<section style="max-width: 1180px; margin: 0 auto; padding: 24px 24px 72px">
+<h2 style="margin: 0; text-align: center; font-weight: 800; letter-spacing: -0.03em; font-size: clamp(30px, 4vw, 44px); line-height: 1.15">Comece em dois minutos</h2>
+<ol style="margin: 40px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px">
+<li style="background: #ffffff; border: 1px solid #e6e8f0; border-radius: 20px; padding: 26px">
+<span style="display: inline-flex; width: 36px; height: 36px; align-items: center; justify-content: center; border-radius: 50%; background: #f0eefe; color: #4a3dd6; font-weight: 700">1</span>
+<p style="margin: 14px 0 0; font-weight: 700; font-size: 17px">Abra o app</p>
+<p style="margin: 6px 0 0; color: #5d6275">No navegador do computador ou do celular. Não precisa instalar nada.</p>
+</li>
+<li style="background: #ffffff; border: 1px solid #e6e8f0; border-radius: 20px; padding: 26px">
+<span style="display: inline-flex; width: 36px; height: 36px; align-items: center; justify-content: center; border-radius: 50%; background: #f0eefe; color: #4a3dd6; font-weight: 700">2</span>
+<p style="margin: 14px 0 0; font-weight: 700; font-size: 17px">Crie o projeto do TCC</p>
+<p style="margin: 6px 0 0; color: #5d6275">Coloque o tema e a data de entrega. O app sugere um planejamento.</p>
+</li>
+<li style="background: #ffffff; border: 1px solid #e6e8f0; border-radius: 20px; padding: 26px">
+<span style="display: inline-flex; width: 36px; height: 36px; align-items: center; justify-content: center; border-radius: 50%; background: #f0eefe; color: #4a3dd6; font-weight: 700">3</span>
+<p style="margin: 14px 0 0; font-weight: 700; font-size: 17px">Cadastre a primeira fonte</p>
+<p style="margin: 6px 0 0; color: #5d6275">Cole o DOI de um artigo e veja a referência ABNT aparecer.</p>
+</li>
+</ol>
+</section>
+
+<!-- Perguntas -->
+<section id="perguntas" style="max-width: 820px; margin: 0 auto; padding: 24px 24px 88px">
+<h2 style="margin: 0; text-align: center; font-weight: 800; letter-spacing: -0.03em; font-size: clamp(30px, 4vw, 44px); line-height: 1.15">Perguntas frequentes</h2>
+<div style="margin-top: 36px; display: flex; flex-direction: column; gap: 12px">
+<details style="background: #ffffff; border: 1px solid #e6e8f0; border-radius: 20px; padding: 18px 22px">
+<summary style="cursor: pointer; font-weight: 700; font-size: 17px">É pago?</summary>
+<p style="margin: 10px 0 0; color: #5d6275">Não. O app é gratuito e não tem plano pago nem anúncios.</p>
+</details>
+<details style="background: #ffffff; border: 1px solid #e6e8f0; border-radius: 20px; padding: 18px 22px">
+<summary style="cursor: pointer; font-weight: 700; font-size: 17px">Preciso criar uma conta?</summary>
+<p style="margin: 10px 0 0; color: #5d6275">Não. É só abrir o endereço e criar o seu projeto.</p>
+</details>
+<details style="background: #ffffff; border: 1px solid #e6e8f0; border-radius: 20px; padding: 18px 22px">
+<summary style="cursor: pointer; font-weight: 700; font-size: 17px">Onde ficam os meus dados?</summary>
+<p style="margin: 10px 0 0; color: #5d6275">No navegador do seu computador. Por isso, faça backup: o app avisa quando estiver na hora e pode salvar uma cópia automática no Google Drive.</p>
+</details>
+<details style="background: #ffffff; border: 1px solid #e6e8f0; border-radius: 20px; padding: 18px 22px">
+<summary style="cursor: pointer; font-weight: 700; font-size: 17px">Consigo usar em outro computador?</summary>
+<p style="margin: 10px 0 0; color: #5d6275">Sim. Baixe o backup num computador e use “Restaurar backup” no outro.</p>
+</details>
+<details style="background: #ffffff; border: 1px solid #e6e8f0; border-radius: 20px; padding: 18px 22px">
+<summary style="cursor: pointer; font-weight: 700; font-size: 17px">A auditoria substitui o detector de plágio da faculdade?</summary>
+<p style="margin: 10px 0 0; color: #5d6275">Não. Ela compara o seu texto só com as fontes que você cadastrou, não com a internet. Serve para revisar citações e evitar cópias sem querer antes da entrega.</p>
+</details>
+<details style="background: #ffffff; border: 1px solid #e6e8f0; border-radius: 20px; padding: 18px 22px">
+<summary style="cursor: pointer; font-weight: 700; font-size: 17px">Serve para qualquer curso?</summary>
+<p style="margin: 10px 0 0; color: #5d6275">Sim. Serve para TCC, monografia, artigo ou qualquer trabalho acadêmico que siga as normas da ABNT.</p>
+</details>
+</div>
+</section>
+
+<!-- Chamada final -->
+<section style="background: #0b0e1c">
+<div style="max-width: 1180px; margin: 0 auto; padding: 80px 24px; display: flex; flex-direction: column; align-items: center; text-align: center">
+<h2 style="margin: 0; max-width: 760px; font-weight: 800; letter-spacing: -0.03em; font-size: clamp(32px, 4.4vw, 52px); line-height: 1.1; color: #ffffff">Menos caos, mais TCC.</h2>
+<p style="margin: 16px 0 0; max-width: 560px; color: #aab0cc; font-size: 18px">Organize suas leituras hoje e chegue na entrega com tudo conferido.</p>
+<a href="./app/" style="margin-top: 30px; background: #5b4ee8; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 17px; padding: 15px 28px; border-radius: 999px">Começar meu TCC agora</a>
+</div>
+<footer style="border-top: 1px solid rgba(170,176,204,0.15)">
+<p style="max-width: 1180px; margin: 0 auto; padding: 22px 24px; color: #8a90aa; font-size: 14px; text-align: center">Organizador de TCC · criado por Vitória · gratuito e sem coleta de dados</p>
+</footer>
+</section>
+
+</div>
+</body>
 </html>
