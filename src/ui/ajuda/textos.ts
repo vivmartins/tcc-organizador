@@ -82,6 +82,7 @@ export const AJUDA: Record<Secao, TextoAjuda> = {
       'Clique em “Baixar backup agora” e guarde o arquivo no Google Drive, num pendrive ou no seu e-mail.',
       'Faça backup com frequência, por exemplo uma vez por semana. O app avisa quando estiver atrasado.',
       'Para usar em outro computador, abra o app lá e use “Restaurar backup” com o arquivo.',
+      'No Chrome ou no Edge do computador, ligue o “Backup automático” e salve o arquivo na pasta do Google Drive: o app atualiza a cópia sozinho a cada alteração.',
     ],
   },
 };

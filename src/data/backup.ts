@@ -24,6 +24,16 @@ export interface ResumoBackup {
   contagens: Record<NomeTabela, number>;
 }
 
+const SINGULAR: Record<NomeTabela, string> = {
+  projetos: 'projeto', fontes: 'fonte', tags: 'tag', fichamentos: 'fichamento', etapas: 'etapa',
+  tarefas: 'tarefa', orientacoes: 'orientação', checklist: 'item de checklist',
+};
+
+/** "1 projeto", "2 projetos"… */
+export function rotuloContagem(t: NomeTabela, n: number): string {
+  return n === 1 ? SINGULAR[t] : ROTULO_TABELA[t];
+}
+
 export const ROTULO_TABELA: Record<NomeTabela, string> = {
   projetos: 'projetos',
   fontes: 'fontes',

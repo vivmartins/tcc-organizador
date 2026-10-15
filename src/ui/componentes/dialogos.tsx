@@ -32,7 +32,7 @@ export function Modal({ aberto, aoFechar, titulo, children, rodape, largura = 'm
         </button>
       </div>
       <div className="max-h-[70vh] overflow-y-auto px-5 py-4 text-sm leading-relaxed">{children}</div>
-      {rodape && <div className="flex justify-end gap-2 border-t border-borda px-5 py-3">{rodape}</div>}
+      {rodape && <div className="flex flex-wrap justify-end gap-2 border-t border-borda px-5 py-3">{rodape}</div>}
     </dialog>
   );
 }

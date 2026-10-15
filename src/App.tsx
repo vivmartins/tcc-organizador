@@ -1,5 +1,6 @@
 import { HashRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { ProvedorAvisos } from './ui/componentes/dialogos.tsx';
+import { ProvedorBackupAutomatico } from './ui/backupAutomatico.tsx';
 import { ProvedorProjeto, useProjeto } from './ui/projetoAtivo.tsx';
 import { Layout } from './ui/layout/Layout.tsx';
 import { BoasVindas, EditarProjeto, NovoProjeto } from './ui/paginas/Projeto.tsx';
@@ -52,9 +53,11 @@ export default function App() {
       <ProvedorProjeto>
         {/* HashRouter: os endereços ficam como site.com/#/biblioteca, o que funciona em
             qualquer hospedagem gratuita sem configuração extra. */}
-        <HashRouter>
-          <Rotas />
-        </HashRouter>
+        <ProvedorBackupAutomatico>
+          <HashRouter>
+            <Rotas />
+          </HashRouter>
+        </ProvedorBackupAutomatico>
       </ProvedorProjeto>
     </ProvedorAvisos>
   );

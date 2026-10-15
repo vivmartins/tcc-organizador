@@ -5,10 +5,11 @@ import { Botao, CabecalhoPagina, Cartao } from '../componentes/base.tsx';
 import { Confirmacao, useAvisos } from '../componentes/dialogos.tsx';
 import {
   gerarBackup, lerArquivoDeBackup, restaurarBackup, nomeDoArquivoDeBackup, registrarBackupFeito,
-  obterUltimoBackup, pedirArmazenamentoPersistente, ROTULO_TABELA, type ArquivoBackup, type ResumoBackup,
+  obterUltimoBackup, pedirArmazenamentoPersistente, rotuloContagem, type ArquivoBackup, type ResumoBackup,
 } from '../../data/backup.ts';
 import { dataCurta } from '../util.ts';
 import { AjudaSecao } from '../ajuda/AjudaSecao.tsx';
+import { CartaoBackupAutomatico } from './CartaoBackupAutomatico.tsx';
 
 function baixar(nome: string, conteudo: string) {
   const url = URL.createObjectURL(new Blob([conteudo], { type: 'application/json' }));
@@ -71,6 +72,8 @@ export function Dados() {
           <Botao variante="primario" className="mt-4" onClick={exportar}><Download size={15} /> Baixar backup agora</Botao>
         </Cartao>
 
+        <CartaoBackupAutomatico />
+
         <Cartao className="p-5 sm:p-6">
           <h2 className="flex items-center gap-2 text-sm font-semibold"><Upload size={16} className="text-acao-600" /> Restaurar backup</h2>
           <p className="mt-1.5 text-sm leading-relaxed text-cinza-600">
@@ -118,7 +121,7 @@ export function Dados() {
             <p>Backup feito em <strong>{dataCurta(paraRestaurar.resumo.exportadoEm)}</strong>, com:</p>
             <ul className="my-3 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
               {Object.entries(paraRestaurar.resumo.contagens).map(([t, n]) => (
-                <li key={t}><strong>{n}</strong> {ROTULO_TABELA[t as keyof typeof ROTULO_TABELA]}</li>
+                <li key={t}><strong>{n}</strong> {rotuloContagem(t as Parameters<typeof rotuloContagem>[0], n)}</li>
               ))}
             </ul>
             {paraRestaurar.resumo.projetos.length > 0 && <p className="text-cinza-600">Projetos: {paraRestaurar.resumo.projetos.join(', ')}</p>}
