@@ -89,10 +89,23 @@ export function comparar(trechoTcc: string, textoFonte: string, alvoPronto?: Pal
     else { ops.push({ tipo: 'so_fonte', w: janela[j], doTcc: false }); j++; }
   }
   for (; i < q.length; i++) ops.push({ tipo: 'so_tcc', w: qw[i], doTcc: true });
+  for (; j < b.length; j++) ops.push({ tipo: 'so_fonte', w: janela[j], doTcc: false });
   const primeiro = ops.findIndex((o) => o.tipo === 'igual');
   let ultimo = -1;
   ops.forEach((o, k) => { if (o.tipo === 'igual') ultimo = k; });
-  const util = ops.filter((o, k) => !(o.tipo === 'so_fonte' && (k < primeiro || k > ultimo)));
+  // Antes do primeiro e depois do último trecho igual, a janela da fonte tem palavras a mais.
+  // Mantém só tantas quantas o TCC trocou ali (uma palavra trocada no fim aparece dos dois lados).
+  const trocasAntes = ops.slice(0, Math.max(0, primeiro)).filter((o) => o.tipo === 'so_tcc').length;
+  const trocasDepois = ops.slice(ultimo + 1).filter((o) => o.tipo === 'so_tcc').length;
+  const fonteAntes = ops.map((o, k) => (o.tipo === 'so_fonte' && k < primeiro ? k : -1)).filter((k) => k >= 0);
+  const manterAntes = new Set(fonteAntes.slice(fonteAntes.length - trocasAntes));
+  let depoisMantidas = 0;
+  const util = ops.filter((o, k) => {
+    if (o.tipo !== 'so_fonte') return true;
+    if (k < primeiro) return manterAntes.has(k);
+    if (k > ultimo) return depoisMantidas++ < trocasDepois;
+    return true;
+  });
   const iguais = util.filter((o) => o.tipo === 'igual').length;
   const diferencas: PedacoDiferenca[] = [];
   for (const o of util) {

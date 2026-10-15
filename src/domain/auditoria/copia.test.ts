@@ -115,3 +115,14 @@ describe('auditoria completa', () => {
     expect(r.copia.fontesComparadas).toBe(2);
   });
 });
+
+describe('palavra trocada no fim do trecho', () => {
+  test('mostra a palavra da fonte também', () => {
+    const c = comparar('ocorre principalmente no sentido laterolateral', 'O deslocamento ocorre principalmente no sentido anteroposterior e está relacionado ao enchimento do reto.')!;
+    expect(c.diferencas).toEqual([
+      { tipo: 'igual', texto: 'ocorre principalmente no sentido' },
+      { tipo: 'so_tcc', texto: 'laterolateral' },
+      { tipo: 'so_fonte', texto: 'anteroposterior' },
+    ]);
+  });
+});
