@@ -110,7 +110,7 @@ export function NovoProjeto() {
   const avisar = useAvisos();
   return (
     <div className="max-w-2xl">
-      <CabecalhoPagina titulo="Novo projeto" descricao="Cada projeto tem sua própria biblioteca, fichamentos e planejamento." voltar={<BotaoLink para="/" variante="fantasma" className="-ml-2"><ArrowLeft size={16} /> Voltar</BotaoLink>} />
+      <CabecalhoPagina titulo="Novo projeto" descricao="Cada projeto tem sua própria biblioteca, fichamentos e planejamento. Tudo fica guardado só neste navegador." voltar={<BotaoLink para="/" variante="fantasma" className="-ml-2"><ArrowLeft size={16} /> Voltar</BotaoLink>} />
       <Cartao className="p-6">
         <FormularioProjeto textoBotao="Criar projeto" aoSalvar={async (d) => { await criarProjeto(d); avisar('sucesso', 'Projeto criado e aberto.'); navegar('/'); }} />
       </Cartao>

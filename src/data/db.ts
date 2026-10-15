@@ -28,6 +28,8 @@ export interface Projeto extends Datas {
   prazoFinal?: string; // AAAA-MM-DD
   /** Com 4+ autores, usar "et al." nas referências. */
   etAlNasReferencias?: boolean;
+  /** Projeto de exemplo, criado para conhecer o app. */
+  exemplo?: boolean;
 }
 
 export interface ResumoEstudo {

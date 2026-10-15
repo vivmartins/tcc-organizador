@@ -1,9 +1,11 @@
+import type React from 'react';
 import { HashRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { ProvedorAvisos } from './ui/componentes/dialogos.tsx';
 import { ProvedorBackupAutomatico } from './ui/backupAutomatico.tsx';
 import { ProvedorProjeto, useProjeto } from './ui/projetoAtivo.tsx';
 import { Layout } from './ui/layout/Layout.tsx';
-import { BoasVindas, EditarProjeto, NovoProjeto } from './ui/paginas/Projeto.tsx';
+import { EditarProjeto, NovoProjeto } from './ui/paginas/Projeto.tsx';
+import { ExigeProjeto, Inicio } from './ui/paginas/Inicio.tsx';
 import { VisaoGeral } from './ui/paginas/VisaoGeral.tsx';
 import { Biblioteca } from './ui/paginas/biblioteca/Biblioteca.tsx';
 import { FormularioFonte } from './ui/paginas/biblioteca/FormularioFonte.tsx';
@@ -25,21 +27,23 @@ function NovaFonte() {
 function Rotas() {
   const { carregando, projeto } = useProjeto();
   if (carregando) return null;
-  if (!projeto) return <BoasVindas />;
+  const exige = (secao: Parameters<typeof ExigeProjeto>[0]['secao'], titulo: string, el: React.ReactNode) => (
+    <ExigeProjeto secao={secao} titulo={titulo}>{el}</ExigeProjeto>
+  );
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route index element={<VisaoGeral />} />
-        <Route path="biblioteca" element={<Biblioteca />} />
-        <Route path="biblioteca/nova" element={<NovaFonte />} />
-        <Route path="biblioteca/:id" element={<PaginaFonte />} />
-        <Route path="biblioteca/:id/editar" element={<FormularioFonte key="editar" />} />
-        <Route path="fichamentos" element={<Fichamentos />} />
-        <Route path="planejamento" element={<Planejamento />} />
-        <Route path="orientacoes" element={<Orientacoes />} />
-        <Route path="auditoria" element={<Auditoria />} />
-        <Route path="conferencia" element={<Conferencia />} />
-        <Route path="projeto" element={<EditarProjeto />} />
+        <Route index element={projeto ? <VisaoGeral /> : <Inicio />} />
+        <Route path="biblioteca" element={exige('biblioteca', 'Biblioteca', <Biblioteca />)} />
+        <Route path="biblioteca/nova" element={exige('biblioteca', 'Biblioteca', <NovaFonte />)} />
+        <Route path="biblioteca/:id" element={exige('biblioteca', 'Biblioteca', <PaginaFonte />)} />
+        <Route path="biblioteca/:id/editar" element={exige('biblioteca', 'Biblioteca', <FormularioFonte key="editar" />)} />
+        <Route path="fichamentos" element={exige('fichamentos', 'Fichamentos', <Fichamentos />)} />
+        <Route path="planejamento" element={exige('planejamento', 'Planejamento', <Planejamento />)} />
+        <Route path="orientacoes" element={exige('orientacoes', 'Orientações', <Orientacoes />)} />
+        <Route path="auditoria" element={exige('auditoria', 'Auditoria do TCC', <Auditoria />)} />
+        <Route path="conferencia" element={exige('conferencia', 'Conferência final', <Conferencia />)} />
+        <Route path="projeto" element={projeto ? <EditarProjeto /> : <Navigate to="/projeto/novo" replace />} />
         <Route path="projeto/novo" element={<NovoProjeto />} />
         <Route path="dados" element={<Dados />} />
         <Route path="como-funciona" element={<ComoFunciona />} />

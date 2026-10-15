@@ -28,6 +28,7 @@ Serviços externos usados, sempre a partir do navegador de quem usa:
 
 | Seção | O que faz |
 |---|---|
+| Início (sem projeto) | Entrada livre: a pessoa vê cada seção, abre um projeto de exemplo fictício ou inicia o próprio projeto quando quiser |
 | Visão geral | Indicadores calculados dos dados reais, prazo, próximas tarefas, atalhos |
 | Biblioteca | Cadastro manual ou por DOI/link/PDF, busca sem acento, filtros, duplicatas, temas sugeridos |
 | Página da fonte | Referência ABNT (NBR 6023:2018) com pendências, citação (NBR 10520:2023), resumo, fichas |

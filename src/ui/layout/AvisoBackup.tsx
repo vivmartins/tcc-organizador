@@ -12,8 +12,11 @@ export const DIAS_PARA_LEMBRAR_BACKUP = 7;
 export function AvisoBackup() {
   const auto = useBackupAutomatico();
   const estado = useLiveQuery(async () => {
-    const [ultimo, fontes, projetos] = await Promise.all([obterUltimoBackup(), db.fontes.count(), db.projetos.count()]);
-    return { ultimo, temDados: fontes > 0 || projetos > 1 };
+    // o projeto de exemplo não conta: não há nada da pessoa para perder
+    const [ultimo, projetos] = await Promise.all([obterUltimoBackup(), db.projetos.toArray()]);
+    const reais = projetos.filter((p) => !p.exemplo).map((p) => p.id);
+    const fontes = reais.length ? await db.fontes.where('projetoId').anyOf(reais).count() : 0;
+    return { ultimo, temDados: fontes > 0 || reais.length > 1 };
   }, []);
   if (auto.situacao === 'precisa_reautorizar' || auto.situacao === 'erro') {
     return (

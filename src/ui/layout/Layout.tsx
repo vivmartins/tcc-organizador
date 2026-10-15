@@ -8,6 +8,7 @@ import { cx } from '../componentes/base.tsx';
 import { useProjeto } from '../projetoAtivo.tsx';
 import { definirProjetoAtivo } from '../../data/projetos.ts';
 import { AvisoBackup } from './AvisoBackup.tsx';
+import { AvisoExemplo } from '../paginas/Inicio.tsx';
 
 const SECOES = [
   { para: '/', rotulo: 'Visão geral', icone: LayoutDashboard },
@@ -36,6 +37,17 @@ function SeletorProjeto({ aoNavegar }: { aoNavegar?: () => void }) {
       document.removeEventListener('keydown', esc);
     };
   }, [aberto]);
+
+  if (!projeto) {
+    return (
+      <button
+        onClick={() => { aoNavegar?.(); navegar('/projeto/novo'); }}
+        className="flex w-full items-center justify-center gap-2 rounded-md bg-acao-600 px-3 py-2.5 text-sm font-semibold text-white hover:bg-acao-700"
+      >
+        <Plus size={16} /> Iniciar meu projeto
+      </button>
+    );
+  }
 
   return (
     <div ref={ref} className="relative">
@@ -154,6 +166,7 @@ export function Layout() {
       )}
 
       <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-8 sm:py-8">
+        <AvisoExemplo />
         <Outlet />
       </main>
     </div>
