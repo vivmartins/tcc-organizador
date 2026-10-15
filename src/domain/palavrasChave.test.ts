@@ -8,16 +8,17 @@ RESUMO Objetivo: analisar...
 Palavras-chave: Radioterapia; Humanização da Assistência; Enfermagem Oncológica.
 ABSTRACT Objective: to analyze...
 Keywords: Radiotherapy; Humanization of Assistance; Oncology Nursing.`;
-    expect(extrairPalavrasChave(texto)).toEqual(['Radioterapia', 'Humanização da Assistência', 'Enfermagem Oncológica']);
+    expect(extrairPalavrasChave(texto)).toEqual({ idioma: 'pt', termos: ['Radioterapia', 'Humanização da Assistência', 'Enfermagem Oncológica'] });
   });
 
   test('aceita "Descritores", separadores por ponto e por vírgula', () => {
-    expect(extrairPalavrasChave('DESCRITORES: Radioterapia. Ansiedade. Comunicação em Saúde.\n\nIntrodução')).toEqual(['Radioterapia', 'Ansiedade', 'Comunicação em Saúde']);
-    expect(extrairPalavrasChave('Keywords: radiotherapy, anxiety, patient education DOI: 10.1/x')).toEqual(['radiotherapy', 'anxiety', 'patient education']);
+    expect(extrairPalavrasChave('DESCRITORES: Radioterapia. Ansiedade. Comunicação em Saúde.\n\nIntrodução')?.termos).toEqual(['Radioterapia', 'Ansiedade', 'Comunicação em Saúde']);
+    expect(extrairPalavrasChave('Keywords: radiotherapy, anxiety, patient education DOI: 10.1/x')).toEqual({ idioma: 'en', termos: ['radiotherapy', 'anxiety', 'patient education'] });
+    expect(extrairPalavrasChave('Palabras clave: radioterapia; ansiedad.')?.idioma).toBe('es');
   });
 
   test('texto sem palavras-chave não inventa nada', () => {
-    expect(extrairPalavrasChave('Um texto qualquer sobre radioterapia sem a seção.')).toEqual([]);
+    expect(extrairPalavrasChave('Um texto qualquer sobre radioterapia sem a seção.')).toBeNull();
   });
 
   test('junta listas sem repetir', () => {

@@ -2,12 +2,12 @@
 // A biblioteca pdf.js só é carregada quando alguém importa um PDF, para não pesar o app.
 
 import { extrairDoi } from '../domain/duplicatas.ts';
-import { extrairPalavrasChave } from '../domain/palavrasChave.ts';
+import { extrairPalavrasChave, type PalavrasEncontradas } from '../domain/palavrasChave.ts';
 
 export interface LeituraPdf {
   doi: string | null;
-  /** Palavras-chave escritas pelos autores (linha "Palavras-chave:", "Descritores:" ou "Keywords:"). */
-  palavrasChave: string[];
+  /** Palavras-chave escritas pelos autores (linha "Palavras-chave:", "Descritores:" ou "Keywords:"), com o idioma. */
+  palavrasChave: PalavrasEncontradas | null;
 }
 
 export const TAMANHO_MAXIMO_PDF = 50 * 1024 * 1024;
@@ -29,18 +29,18 @@ export async function lerPdf(arquivo: File, paginas = 3): Promise<LeituraPdf> {
   }
   try {
     let doi: string | null = null;
-    let palavrasChave: string[] = [];
+    let palavrasChave: PalavrasEncontradas | null = null;
     // 1) Metadados do arquivo (algumas editoras gravam o DOI e as palavras-chave ali)
     const info = (await doc.getMetadata().catch(() => null))?.info as Record<string, unknown> | undefined;
     for (const v of Object.values(info ?? {})) if (typeof v === 'string') doi ??= extrairDoi(v);
     // 2) Texto das primeiras páginas (com as quebras de linha, que ajudam a separar as seções)
-    for (let n = 1; n <= Math.min(paginas, doc.numPages) && (!doi || palavrasChave.length === 0); n++) {
+    for (let n = 1; n <= Math.min(paginas, doc.numPages) && (!doi || !palavrasChave); n++) {
       const pagina = await doc.getPage(n);
       const conteudo = await pagina.getTextContent();
       const texto = conteudo.items.map((i) => ('str' in i ? i.str + (i.hasEOL ? '\n' : '') : '')).join(' ').replace(/ +\n/g, '\n');
       // junta quebras dentro do DOI ("10.1590/ s0034...") que a diagramação às vezes cria
       doi ??= extrairDoi(texto) ?? extrairDoi(texto.replace(/(10\.\d{4,9}\/)\s+/g, '$1'));
-      if (palavrasChave.length === 0) palavrasChave = extrairPalavrasChave(texto);
+      palavrasChave ??= extrairPalavrasChave(texto);
     }
     return { doi, palavrasChave };
   } finally {

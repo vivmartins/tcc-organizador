@@ -27,7 +27,7 @@ export const AJUDA: Record<Secao, TextoAjuda> = {
       'Dados importados vêm marcados como “a conferir”: compare com a publicação antes de usar a referência.',
       'Abra uma fonte para ver a referência ABNT pronta, conferir os dados e registrar o resumo do estudo.',
       'Use tags (temas) para agrupar fontes por assunto e o status para controlar o que já leu. O app sugere temas seus que combinam com cada fonte; é só clicar para adicionar.',
-      'Palavras-chave: ao importar um PDF, o app lê as palavras-chave dos autores. Pelo DOI, traz as do OpenAlex (em inglês).',
+      'Palavras-chave: ao importar um PDF, o app usa as palavras-chave dos autores em português. Termos em outro idioma (do PDF ou do OpenAlex) são traduzidos pelo tradutor do próprio Chrome/Edge; sem ele, não são usados.',
       'Marque várias fontes e clique em “Copiar referências” para colar a lista, em ordem alfabética, no seu documento.',
     ],
     exemplo: 'Ex.: cadastre o artigo “Humanização em radioterapia” com a tag “Humanização” e o status “Lendo”.',

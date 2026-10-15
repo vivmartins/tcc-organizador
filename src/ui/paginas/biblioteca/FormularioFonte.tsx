@@ -5,10 +5,11 @@ import { ArrowLeft, ArrowDown, ArrowUp, Plus, Trash2, Info } from 'lucide-react'
 import { db, type Fonte, type StatusLeitura } from '../../../data/db.ts';
 import { criarFonte, atualizarFonte, verificarDuplicatas, ErroDeValidacao, normalizarDadosFonte, type DadosFonte } from '../../../data/fontes.ts';
 import type { OrigemMetadados } from '../../../data/db.ts';
-import { PainelImportacao, type Importacao, type Modo } from './PainelImportacao.tsx';
+import { PainelImportacao, type Assuntos, type Importacao, type Modo } from './PainelImportacao.tsx';
 import { juntarPalavrasChave, sugerirTemasExistentes } from '../../../domain/palavrasChave.ts';
 import { normalizarParaBusca } from '../../../domain/busca.ts';
 import { buscarPorDoi, ErroDeImportacao } from '../../../integrations/metadados.ts';
+import { prepararTradutor, traduzirTermos } from '../../../integrations/traducao.ts';
 import { limparDoi } from '../../../domain/abnt/referencia.ts';
 import { Plus as Mais, Sparkles, Loader2 } from 'lucide-react';
 import { obterOuCriarTag } from '../../../data/tags.ts';
@@ -186,7 +187,7 @@ function SugestoesTemas({ existentes, externos, aoAdicionar }: { existentes: str
       )}
       {externos.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-xs text-cinza-600">Tópicos do OpenAlex (em inglês):</span>
+          <span className="text-xs text-cinza-600">Tópicos do OpenAlex (traduzidos automaticamente):</span>
           {externos.map((t) => chip(t, true))}
         </div>
       )}
@@ -228,7 +229,7 @@ export function FormularioFonte() {
   const [importados, setImportados] = useState<Record<string, string>>({});
   const [origem, setOrigem] = useState<OrigemMetadados | null>(null);
   const [versaoForm, setVersaoForm] = useState(0);
-  const [origemPalavras, setOrigemPalavras] = useState<'autores' | 'openalex' | null>(null);
+  const [origemPalavras, setOrigemPalavras] = useState<'autores' | 'autores_traduzidas' | 'openalex' | null>(null);
   const [temasExternos, setTemasExternos] = useState<string[]>([]);
   const [buscandoAssuntos, setBuscandoAssuntos] = useState(false);
   const [erros, setErros] = useState<Record<string, string>>({});
@@ -290,20 +291,10 @@ export function FormularioFonte() {
     return status;
   }
 
-  function aplicarImportacao({ resultado, url, modo, palavrasChaveDosAutores = [] }: Importacao) {
+  function aplicarImportacao({ resultado, url, modo }: Importacao) {
     if (!e) return;
-    const palavrasImportadas = palavrasChaveDosAutores.length ? palavrasChaveDosAutores : (resultado?.palavrasChave ?? []);
-    const preencherPalavras = !e.palavrasChave.trim() && palavrasImportadas.length > 0;
-    if (preencherPalavras) setOrigemPalavras(palavrasChaveDosAutores.length ? 'autores' : 'openalex');
-    setTemasExternos(resultado?.temas ?? []);
-    if (!resultado && !url) {
-      // PDF sem DOI: aproveita só as palavras-chave dos autores, sem mexer no resto do formulário.
-      if (palavrasImportadas.length) {
-        setE({ ...e, palavrasChave: juntarPalavrasChave(separarPalavras(e.palavrasChave), palavrasImportadas).join('; ') });
-        if (!e.palavrasChave.trim()) setOrigemPalavras('autores');
-      }
-      return;
-    }
+    setTemasExternos([]);
+    if (!e.palavrasChave.trim()) setOrigemPalavras(null);
     const hoje = hojeIso();
     const base = estadoInicial(undefined, nomesTags);
     const novo: Estado = { ...base, tags: e.tags, statusLeitura: e.statusLeitura, observacoes: e.observacoes, palavrasChave: e.palavrasChave };
@@ -334,7 +325,6 @@ export function FormularioFonte() {
       localDaBiblioteca = carregado.locais.get(normalizarParaBusca(veiculo));
       if (localDaBiblioteca) novo.textos.localPublicacao = localDaBiblioteca;
     }
-    if (preencherPalavras) novo.palavrasChave = palavrasImportadas.join('; ');
     // Guarda o valor importado de cada campo, já no formato salvo
     const norm = normalizarDadosFonte(montarDados(novo, [])) as unknown as Record<string, unknown>;
     const marcados: Record<string, string> = {};
@@ -349,18 +339,34 @@ export function FormularioFonte() {
     if (localDaBiblioteca) avisar('sucesso', `Local “${localDaBiblioteca}” preenchido com base em outra fonte do mesmo periódico na sua biblioteca. Confira.`);
   }
 
+  /** Palavras-chave e temas que chegam depois dos dados, já em português. */
+  function aplicarAssuntos({ palavras, temas, origem }: Assuntos) {
+    if (temas.length) setTemasExternos((t) => juntarPalavrasChave(t, temas));
+    if (!palavras.length) return;
+    setOrigemPalavras((o) => o ?? origem);
+    setE((prev) => (prev ? { ...prev, palavrasChave: juntarPalavrasChave(separarPalavras(prev.palavrasChave), palavras).join('; ') } : prev));
+  }
+
   async function buscarAssuntosPeloDoi() {
     if (!e) return;
+    void prepararTradutor('en'); // dentro do clique: permite ao navegador baixar o tradutor, se preciso
     setBuscandoAssuntos(true);
     try {
       const r = await buscarPorDoi(e.doi);
+      const [palavras, temas] = await Promise.all([traduzirTermos(r.palavrasChave, 'en'), traduzirTermos(r.temas, 'en')]);
+      if ((palavras === null && r.palavrasChave.length) || (temas === null && r.temas.length)) {
+        avisar('erro', 'O OpenAlex só informa esses termos em inglês, e a tradução automática não está disponível neste navegador (use o Chrome ou o Edge atualizados, no computador).');
+        return;
+      }
+      r.palavrasChave = palavras ?? [];
+      r.temas = temas ?? [];
       const atuais = separarPalavras(e.palavrasChave);
       const novas = juntarPalavrasChave(atuais, r.palavrasChave);
       setE({ ...e, palavrasChave: novas.join('; ') });
       setTemasExternos(r.temas);
       if (!atuais.length && r.palavrasChave.length) setOrigemPalavras('openalex');
       const acrescentadas = novas.length - atuais.length;
-      avisar(acrescentadas || r.temas.length ? 'sucesso' : 'erro', acrescentadas ? `${acrescentadas} palavra(s)-chave encontrada(s) no OpenAlex.` : r.temas.length ? 'Nenhuma palavra-chave nova; veja os tópicos sugeridos.' : 'O OpenAlex não informou palavras-chave para este DOI.');
+      avisar(acrescentadas || r.temas.length ? 'sucesso' : 'erro', acrescentadas ? `${acrescentadas} palavra(s)-chave encontrada(s) no OpenAlex e traduzida(s) para o português.` : r.temas.length ? 'Nenhuma palavra-chave nova; veja os tópicos sugeridos.' : 'O OpenAlex não informou palavras-chave para este DOI.');
     } catch (err) {
       avisar('erro', err instanceof ErroDeImportacao ? err.message : 'Não foi possível buscar agora.');
     } finally {
@@ -430,7 +436,7 @@ export function FormularioFonte() {
       />
 
       <div className="flex flex-col gap-4">
-        {!editando && <PainelImportacao key={params.get('importar') ?? 'doi'} modoInicial={(['doi', 'link', 'pdf'].includes(params.get('importar') ?? '') ? params.get('importar') : 'doi') as Modo} aoImportar={aplicarImportacao} />}
+        {!editando && <PainelImportacao key={params.get('importar') ?? 'doi'} modoInicial={(['doi', 'link', 'pdf'].includes(params.get('importar') ?? '') ? params.get('importar') : 'doi') as Modo} aoImportar={aplicarImportacao} aoReceberAssuntos={aplicarAssuntos} />}
         <Secao titulo="Identificação" key={`ident-${versaoForm}`}>
           <Campo rotulo="Tipo de publicação" id="tipo">
             <Selecao id="tipo" value={e.tipo} onChange={(ev) => set({ tipo: ev.target.value as TipoPublicacao })} className="sm:w-72">
@@ -507,7 +513,8 @@ export function FormularioFonte() {
             id="palavras"
             dica={
               origemPalavras === 'autores' ? 'Lidas do PDF: são as palavras-chave escritas pelos autores. Confira.'
-              : origemPalavras === 'openalex' ? 'Vindas do OpenAlex: geradas automaticamente (em geral em inglês). Ajuste se quiser.'
+              : origemPalavras === 'autores_traduzidas' ? 'Lidas do PDF (palavras-chave dos autores) e traduzidas automaticamente para o português. Confira.'
+              : origemPalavras === 'openalex' ? 'Vindas do OpenAlex e traduzidas automaticamente para o português. Confira e ajuste se quiser.'
               : 'Separe com ponto e vírgula.'
             }
           >

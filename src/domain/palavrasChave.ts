@@ -25,9 +25,14 @@ function dividir(bloco: string): string[] {
     .filter((p) => p.length >= 2 && p.length <= 80 && p.split(' ').length <= 8 && !/^\d+$/.test(p));
 }
 
-/** Palavras-chave dos autores, preferindo as em português. Lista vazia se não encontrar. */
-export function extrairPalavrasChave(texto: string, max = 12): string[] {
-  for (const { re } of ROTULOS) {
+export interface PalavrasEncontradas {
+  idioma: 'pt' | 'es' | 'en';
+  termos: string[];
+}
+
+/** Palavras-chave dos autores, preferindo as em português. null se não encontrar. */
+export function extrairPalavrasChave(texto: string, max = 12): PalavrasEncontradas | null {
+  for (const { idioma, re } of ROTULOS) {
     const m = re.exec(texto);
     if (!m) continue;
     const resto = texto.slice(m.index + m[0].length, m.index + m[0].length + 500);
@@ -35,9 +40,9 @@ export function extrairPalavrasChave(texto: string, max = 12): string[] {
     const termos = dividir(fim ? resto.slice(0, fim.index) : resto);
     const unicos: string[] = [];
     for (const t of termos) if (!unicos.some((u) => normalizarParaBusca(u) === normalizarParaBusca(t))) unicos.push(t);
-    if (unicos.length) return unicos.slice(0, max);
+    if (unicos.length) return { idioma, termos: unicos.slice(0, max) };
   }
-  return [];
+  return null;
 }
 
 /** Junta listas de palavras-chave sem repetir (ignorando acentos e maiúsculas). */
