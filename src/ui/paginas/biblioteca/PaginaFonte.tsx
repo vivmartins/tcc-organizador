@@ -14,6 +14,7 @@ import { copiar, dataCurta, plural } from '../../util.ts';
 import { ORDEM_STATUS, ROTULO_STATUS_LEITURA } from './rotulos.ts';
 import { formatarDataAcesso } from '../../../domain/abnt/referencia.ts';
 import { ListaDeFichas } from '../fichamentos/Fichamentos.tsx';
+import { TextoDaFonte } from './TextoDaFonte.tsx';
 
 type Aba = 'dados' | 'resumo' | 'fichamentos' | 'referencia';
 const ABAS: { id: Aba; rotulo: string }[] = [
@@ -295,7 +296,12 @@ export function PaginaFonte() {
 
       <div role="tabpanel">
         {aba === 'referencia' && <AbaReferencia fonte={fonte} etAl={projeto.etAlNasReferencias} />}
-        {aba === 'dados' && <AbaDados fonte={fonte} nomesTags={nomesTags} />}
+        {aba === 'dados' && (
+          <div className="flex flex-col gap-4">
+            <AbaDados fonte={fonte} nomesTags={nomesTags} />
+            <TextoDaFonte fonte={fonte} />
+          </div>
+        )}
         {aba === 'resumo' && <AbaResumo key={fonte.id} fonte={fonte} />}
         {aba === 'fichamentos' && <ListaDeFichas fonteId={fonte.id} />}
       </div>

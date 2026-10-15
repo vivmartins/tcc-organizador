@@ -116,8 +116,9 @@ export async function atualizarStatusLeitura(id: string, statusLeitura: Fonte['s
 
 /** Exclui a fonte e os fichamentos ligados a ela. */
 export async function excluirFonte(id: string): Promise<void> {
-  await db.transaction('rw', db.fontes, db.fichamentos, async () => {
+  await db.transaction('rw', db.fontes, db.fichamentos, db.textos, async () => {
     await db.fichamentos.where('fonteId').equals(id).delete();
+    await db.textos.delete(id);
     await db.fontes.delete(id);
   });
 }

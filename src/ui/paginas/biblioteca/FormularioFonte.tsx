@@ -5,7 +5,8 @@ import { ArrowLeft, ArrowDown, ArrowUp, Plus, Trash2, Info } from 'lucide-react'
 import { db, type Fonte, type StatusLeitura } from '../../../data/db.ts';
 import { criarFonte, atualizarFonte, verificarDuplicatas, ErroDeValidacao, normalizarDadosFonte, type DadosFonte } from '../../../data/fontes.ts';
 import type { OrigemMetadados } from '../../../data/db.ts';
-import { PainelImportacao, type Assuntos, type Importacao, type Modo } from './PainelImportacao.tsx';
+import { PainelImportacao, type Assuntos, type Importacao, type Modo, type TextoLido } from './PainelImportacao.tsx';
+import { salvarTexto, contarPalavras } from '../../../data/textos.ts';
 import { juntarPalavrasChave, sugerirTemasExistentes } from '../../../domain/palavrasChave.ts';
 import { normalizarParaBusca } from '../../../domain/busca.ts';
 import { buscarPorDoi, ErroDeImportacao } from '../../../integrations/metadados.ts';
@@ -232,6 +233,10 @@ export function FormularioFonte() {
   const [origemPalavras, setOrigemPalavras] = useState<'autores' | 'autores_traduzidas' | 'openalex' | null>(null);
   const [temasExternos, setTemasExternos] = useState<string[]>([]);
   const [buscandoAssuntos, setBuscandoAssuntos] = useState(false);
+  // Texto para a auditoria: do PDF importado (se a pessoa quiser guardar) ou o resumo do OpenAlex
+  const [textoPdf, setTextoPdf] = useState<TextoLido | null>(null);
+  const [guardarTextoPdf, setGuardarTextoPdf] = useState(true);
+  const [resumoImportado, setResumoImportado] = useState<string | null>(null);
   const [erros, setErros] = useState<Record<string, string>>({});
   const [salvando, setSalvando] = useState(false);
   const [duplicatas, setDuplicatas] = useState<{ fonte: Fonte; motivo: string }[] | null>(null);
@@ -293,6 +298,7 @@ export function FormularioFonte() {
 
   function aplicarImportacao({ resultado, url, modo }: Importacao) {
     if (!e) return;
+    setResumoImportado(resultado?.resumo ?? null);
     setTemasExternos([]);
     if (!e.palavrasChave.trim()) setOrigemPalavras(null);
     const hoje = hojeIso();
@@ -398,6 +404,13 @@ export function FormularioFonte() {
         navegar(`/biblioteca/${carregado.fonte.id}`);
       } else {
         const nova = await criarFonte(projeto.id, dados);
+        // Guarda o texto para a auditoria (o arquivo PDF em si não é guardado)
+        try {
+          if (textoPdf && guardarTextoPdf) await salvarTexto(nova.id, { origem: 'pdf', ...textoPdf });
+          else if (resumoImportado) await salvarTexto(nova.id, { origem: 'resumo', texto: resumoImportado });
+        } catch (err) {
+          avisar('erro', `A fonte foi salva, mas o texto para a auditoria não: ${(err as Error).message}`);
+        }
         avisar('sucesso', 'Fonte cadastrada.');
         navegar(`/biblioteca/${nova.id}`);
       }
@@ -436,7 +449,16 @@ export function FormularioFonte() {
       />
 
       <div className="flex flex-col gap-4">
-        {!editando && <PainelImportacao key={params.get('importar') ?? 'doi'} modoInicial={(['doi', 'link', 'pdf'].includes(params.get('importar') ?? '') ? params.get('importar') : 'doi') as Modo} aoImportar={aplicarImportacao} aoReceberAssuntos={aplicarAssuntos} />}
+        {!editando && <PainelImportacao key={params.get('importar') ?? 'doi'} modoInicial={(['doi', 'link', 'pdf'].includes(params.get('importar') ?? '') ? params.get('importar') : 'doi') as Modo} aoImportar={aplicarImportacao} aoReceberAssuntos={aplicarAssuntos} aoLerPdf={setTextoPdf} />}
+        {!editando && textoPdf && (
+          <label className="-mt-2 flex items-start gap-2.5 rounded-lg border border-borda bg-superficie px-4 py-3 text-sm text-marinho-700">
+            <input type="checkbox" className="mt-0.5 size-4 accent-acao-600" checked={guardarTextoPdf} onChange={(ev) => setGuardarTextoPdf(ev.target.checked)} />
+            <span>
+              Guardar o texto deste PDF para a auditoria do TCC
+              <span className="block text-xs text-cinza-500">{textoPdf.nomeArquivo} · {textoPdf.paginas} pág. · {contarPalavras(textoPdf.texto).toLocaleString('pt-BR')} palavras. Só o texto fica guardado, e só no seu navegador; o arquivo não.</span>
+            </span>
+          </label>
+        )}
         <Secao titulo="Identificação" key={`ident-${versaoForm}`}>
           <Campo rotulo="Tipo de publicação" id="tipo">
             <Selecao id="tipo" value={e.tipo} onChange={(ev) => set({ tipo: ev.target.value as TipoPublicacao })} className="sm:w-72">

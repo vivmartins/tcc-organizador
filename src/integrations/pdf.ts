@@ -8,11 +8,16 @@ export interface LeituraPdf {
   doi: string | null;
   /** Palavras-chave escritas pelos autores (linha "Palavras-chave:", "Descritores:" ou "Keywords:"), com o idioma. */
   palavrasChave: PalavrasEncontradas | null;
+  /** Texto de todas as páginas (para a auditoria) e o número de páginas lidas. */
+  texto: string;
+  paginas: number;
 }
+
+export const MAX_PAGINAS = 400;
 
 export const TAMANHO_MAXIMO_PDF = 50 * 1024 * 1024;
 
-export async function lerPdf(arquivo: File, paginas = 3): Promise<LeituraPdf> {
+export async function lerPdf(arquivo: File, paginasParaDoi = 3): Promise<LeituraPdf> {
   if (arquivo.type && arquivo.type !== 'application/pdf') throw new Error('Escolha um arquivo PDF.');
   if (arquivo.size > TAMANHO_MAXIMO_PDF) throw new Error('O PDF é grande demais (limite de 50 MB).');
   // Versão "legacy": inclui adaptações para navegadores que ainda não têm os recursos mais novos de JavaScript.
@@ -33,16 +38,22 @@ export async function lerPdf(arquivo: File, paginas = 3): Promise<LeituraPdf> {
     // 1) Metadados do arquivo (algumas editoras gravam o DOI e as palavras-chave ali)
     const info = (await doc.getMetadata().catch(() => null))?.info as Record<string, unknown> | undefined;
     for (const v of Object.values(info ?? {})) if (typeof v === 'string') doi ??= extrairDoi(v);
-    // 2) Texto das primeiras páginas (com as quebras de linha, que ajudam a separar as seções)
-    for (let n = 1; n <= Math.min(paginas, doc.numPages) && (!doi || !palavrasChave); n++) {
+    // 2) Texto de todas as páginas (com as quebras de linha, que ajudam a separar as seções).
+    //    DOI e palavras-chave são procurados só no começo do artigo.
+    const total = Math.min(MAX_PAGINAS, doc.numPages);
+    const paginasTexto: string[] = [];
+    for (let n = 1; n <= total; n++) {
       const pagina = await doc.getPage(n);
       const conteudo = await pagina.getTextContent();
       const texto = conteudo.items.map((i) => ('str' in i ? i.str + (i.hasEOL ? '\n' : '') : '')).join(' ').replace(/ +\n/g, '\n');
-      // junta quebras dentro do DOI ("10.1590/ s0034...") que a diagramação às vezes cria
-      doi ??= extrairDoi(texto) ?? extrairDoi(texto.replace(/(10\.\d{4,9}\/)\s+/g, '$1'));
-      palavrasChave ??= extrairPalavrasChave(texto);
+      paginasTexto.push(texto);
+      if (n <= paginasParaDoi) {
+        // junta quebras dentro do DOI ("10.1590/ s0034...") que a diagramação às vezes cria
+        doi ??= extrairDoi(texto) ?? extrairDoi(texto.replace(/(10\.\d{4,9}\/)\s+/g, '$1'));
+        palavrasChave ??= extrairPalavrasChave(texto);
+      }
     }
-    return { doi, palavrasChave };
+    return { doi, palavrasChave, texto: paginasTexto.join('\n\n'), paginas: total };
   } finally {
     void tarefa.destroy();
   }

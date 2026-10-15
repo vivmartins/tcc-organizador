@@ -21,7 +21,7 @@ type Seletor = (o: { suggestedName: string; types: { description: string; accept
 const CHAVE_ARQUIVO = 'backupAutoArquivo';
 const CHAVE_ULTIMO = 'backupAutoUltimo';
 export const NOME_SUGERIDO = 'backup-organizador-tcc.json';
-export const TABELAS_OBSERVADAS = ['projetos', 'fontes', 'tags', 'fichamentos', 'etapas', 'tarefas', 'orientacoes', 'checklist'];
+export const TABELAS_OBSERVADAS = ['projetos', 'fontes', 'tags', 'fichamentos', 'etapas', 'tarefas', 'orientacoes', 'checklist', 'textos'];
 
 const seletor = () => (globalThis as unknown as { showSaveFilePicker?: Seletor }).showSaveFilePicker;
 export const backupAutomaticoSuportado = () => typeof seletor() === 'function';

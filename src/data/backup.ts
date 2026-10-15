@@ -8,7 +8,7 @@ import { db, agora } from './db.ts';
 export const FORMATO_BACKUP = 'tcc-organizador-backup';
 export const VERSAO_BACKUP = 1;
 
-const TABELAS = ['projetos', 'fontes', 'tags', 'fichamentos', 'etapas', 'tarefas', 'orientacoes', 'checklist'] as const;
+const TABELAS = ['projetos', 'fontes', 'tags', 'fichamentos', 'etapas', 'tarefas', 'orientacoes', 'checklist', 'textos'] as const;
 type NomeTabela = (typeof TABELAS)[number];
 
 export interface ArquivoBackup {
@@ -26,7 +26,7 @@ export interface ResumoBackup {
 
 const SINGULAR: Record<NomeTabela, string> = {
   projetos: 'projeto', fontes: 'fonte', tags: 'tag', fichamentos: 'fichamento', etapas: 'etapa',
-  tarefas: 'tarefa', orientacoes: 'orientação', checklist: 'item de checklist',
+  tarefas: 'tarefa', orientacoes: 'orientação', checklist: 'item de checklist', textos: 'texto de fonte',
 };
 
 /** "1 projeto", "2 projetos"… */
@@ -43,6 +43,7 @@ export const ROTULO_TABELA: Record<NomeTabela, string> = {
   tarefas: 'tarefas',
   orientacoes: 'orientações',
   checklist: 'itens de checklist',
+  textos: 'textos de fontes',
 };
 
 export async function gerarBackup(): Promise<ArquivoBackup> {

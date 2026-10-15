@@ -22,9 +22,21 @@ export interface ResultadoImportacao {
   palavrasChave: string[];
   /** Tópicos do OpenAlex, para sugerir temas (em inglês). */
   temas: string[];
+  /** Resumo (abstract) do OpenAlex, quando disponível, para a auditoria. */
+  resumo?: string;
 }
 
 export class ErroDeImportacao extends Error {}
+
+/** Monta o texto do resumo a partir do "índice invertido" do OpenAlex ({palavra: [posições]}). */
+export function resumoDoIndiceInvertido(indice?: Record<string, number[]> | null): string | null {
+  if (!indice) return null;
+  const palavras: string[] = [];
+  for (const [palavra, posicoes] of Object.entries(indice)) for (const p of posicoes) palavras[p] = palavra;
+  const texto = palavras.filter(Boolean).join(' ').trim();
+  return texto || null;
+}
+
 
 type Buscar = (url: string) => Promise<Response>;
 
@@ -199,6 +211,7 @@ interface ObraOpenAlex {
   primary_location?: { landing_page_url?: string | null; source?: { display_name?: string | null; type?: string | null; host_organization_name?: string | null } | null } | null;
   biblio?: { volume?: string | null; issue?: string | null; first_page?: string | null; last_page?: string | null } | null;
   keywords?: { display_name?: string | null; score?: number | null }[] | null;
+  abstract_inverted_index?: Record<string, number[]> | null;
   primary_topic?: TopicoOpenAlex | null;
   topics?: TopicoOpenAlex[] | null;
 }
@@ -307,7 +320,11 @@ export async function buscarPorDoi(doiDigitado: string, buscar: Buscar = (u) => 
     throw new ErroDeImportacao('Nenhum dado encontrado para esse DOI no Crossref nem no OpenAlex. Confira o DOI ou preencha manualmente.');
   }
   const resultado = combinar(crossref, openalex);
-  if (oa.status === 'fulfilled' && oa.value) Object.assign(resultado, assuntosOpenAlex(oa.value as ObraOpenAlex));
+  if (oa.status === 'fulfilled' && oa.value) {
+    Object.assign(resultado, assuntosOpenAlex(oa.value as ObraOpenAlex));
+    const resumo = resumoDoIndiceInvertido((oa.value as ObraOpenAlex).abstract_inverted_index);
+    if (resumo) resultado.resumo = resumo;
+  }
   resultado.dados.doi = resultado.dados.doi ?? doi;
   return resultado;
 }

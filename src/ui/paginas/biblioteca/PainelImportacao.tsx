@@ -26,7 +26,9 @@ export interface Assuntos {
 const ROTULO_SERVICO = { crossref: 'Crossref', openalex: 'OpenAlex' };
 const NOME_IDIOMA = { en: 'inglês', es: 'espanhol' } as const;
 
-export function PainelImportacao({ modoInicial = 'doi', aoImportar, aoReceberAssuntos }: { modoInicial?: Modo; aoImportar: (i: Importacao) => void; aoReceberAssuntos: (a: Assuntos) => void }) {
+export interface TextoLido { texto: string; paginas: number; nomeArquivo: string }
+
+export function PainelImportacao({ modoInicial = 'doi', aoImportar, aoReceberAssuntos, aoLerPdf }: { modoInicial?: Modo; aoImportar: (i: Importacao) => void; aoReceberAssuntos: (a: Assuntos) => void; aoLerPdf?: (t: TextoLido) => void }) {
   const [modo, setModo] = useState<Modo>(modoInicial);
   const [valor, setValor] = useState('');
   const [carregando, setCarregando] = useState<string | null>(null);
@@ -120,6 +122,7 @@ export function PainelImportacao({ modoInicial = 'doi', aoImportar, aoReceberAss
       if (arquivo.current) arquivo.current.value = '';
     }
     setCarregando(null);
+    aoLerPdf?.({ texto: leitura.texto, paginas: leitura.paginas, nomeArquivo: f.name });
     if (!leitura.doi) {
       setMensagem({
         tipo: 'aviso',

@@ -116,6 +116,18 @@ export interface ChecklistItem extends Datas {
   ordem: number;
 }
 
+/** Texto completo (ou resumo) de uma fonte, usado na auditoria do TCC. Fica só no navegador. */
+export interface TextoFonte {
+  id: string; // = id da fonte
+  projetoId: string;
+  origem: 'pdf' | 'resumo';
+  texto: string;
+  nomeArquivo?: string;
+  paginas?: number;
+  palavras: number;
+  criadoEm: string;
+}
+
 export interface Config {
   chave: string;
   valor: unknown;
@@ -131,9 +143,10 @@ export type BancoTcc = Dexie & {
   orientacoes: EntityTable<Orientacao, 'id'>;
   checklist: EntityTable<ChecklistItem, 'id'>;
   config: EntityTable<Config, 'chave'>;
+  textos: EntityTable<TextoFonte, 'id'>;
 };
 
-export const TABELAS_DO_PROJETO = ['fontes', 'tags', 'fichamentos', 'etapas', 'tarefas', 'orientacoes', 'checklist'] as const;
+export const TABELAS_DO_PROJETO = ['fontes', 'tags', 'fichamentos', 'etapas', 'tarefas', 'orientacoes', 'checklist', 'textos'] as const;
 
 export const db = new Dexie('tcc-organizador') as BancoTcc;
 
@@ -150,6 +163,9 @@ db.version(1).stores({
   checklist: 'id, projetoId, ordem',
   config: 'chave',
 });
+
+// Versão 2: textos das fontes para a auditoria (as tabelas antigas continuam iguais).
+db.version(2).stores({ textos: 'id, projetoId' });
 
 export const novoId = () => crypto.randomUUID();
 export const agora = () => new Date().toISOString();
