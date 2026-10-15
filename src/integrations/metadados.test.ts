@@ -190,3 +190,21 @@ describe('assuntos do OpenAlex', () => {
     expect(r.temas[0]).toBe('Oncology');
   });
 });
+
+describe('URL e subtítulo', () => {
+  test('usa a página do artigo como URL (não o link do DOI) e separa o subtítulo', async () => {
+    const { converterCrossref, converterOpenAlex, separarTitulo } = await import('./metadados.ts');
+    const d = converterCrossref({
+      DOI: '10.1590/x', type: 'journal-article', title: ['Humanização em radioterapia: revisão narrativa'],
+      URL: 'https://doi.org/10.1590/x', resource: { primary: { URL: 'http://www.scielo.br/scielo.php?script=sci_arttext&pid=S0034' } },
+    });
+    expect(d.titulo).toBe('Humanização em radioterapia');
+    expect(d.subtitulo).toBe('revisão narrativa');
+    expect(d.url).toBe('http://www.scielo.br/scielo.php?script=sci_arttext&pid=S0034');
+    expect(converterCrossref({ type: 'journal-article', title: ['T'], resource: { primary: { URL: 'https://doi.org/10.1/x' } } }).url).toBeUndefined();
+    expect(converterOpenAlex({ title: 'A: b', primary_location: { landing_page_url: 'https://site.org/a' } }).url).toBe('https://site.org/a');
+    // subtítulo informado pelo serviço é respeitado; títulos sem ": " não são cortados
+    expect(separarTitulo('A: B', 'C')).toEqual({ titulo: 'A: B', subtitulo: 'C' });
+    expect(separarTitulo('COVID-19 e radioterapia')).toEqual({ titulo: 'COVID-19 e radioterapia' });
+  });
+});

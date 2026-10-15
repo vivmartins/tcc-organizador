@@ -7,6 +7,7 @@ import { criarFonte, atualizarFonte, verificarDuplicatas, ErroDeValidacao, norma
 import type { OrigemMetadados } from '../../../data/db.ts';
 import { PainelImportacao, type Importacao, type Modo } from './PainelImportacao.tsx';
 import { juntarPalavrasChave, sugerirTemasExistentes } from '../../../domain/palavrasChave.ts';
+import { normalizarParaBusca } from '../../../domain/busca.ts';
 import { buscarPorDoi, ErroDeImportacao } from '../../../integrations/metadados.ts';
 import { limparDoi } from '../../../domain/abnt/referencia.ts';
 import { Plus as Mais, Sparkles, Loader2 } from 'lucide-react';
@@ -213,7 +214,12 @@ export function FormularioFonte() {
   const carregado = useLiveQuery(async () => {
     const tags = await db.tags.where('projetoId').equals(projeto.id).toArray();
     const fonte = id ? await db.fontes.get(id) : undefined;
-    return { tags, fonte };
+    // Local de publicação já informado para cada periódico/livro na sua biblioteca (o mais recente vale).
+    const locais = new Map<string, string>();
+    for (const f of (await db.fontes.toArray()).sort((a, b) => a.atualizadoEm.localeCompare(b.atualizadoEm))) {
+      if (f.veiculo && f.localPublicacao) locais.set(normalizarParaBusca(f.veiculo), f.localPublicacao);
+    }
+    return { tags, fonte, locais };
   }, [projeto.id, id]);
 
   const [e, setE] = useState<Estado | null>(null);
@@ -315,15 +321,24 @@ export function FormularioFonte() {
         if (typeof v === 'string' || typeof v === 'number') novo.textos[c] = String(v);
       }
     }
-    if (url) {
-      novo.url = url;
+    // URL: o link digitado (importação por link) ou a página do artigo informada pelo serviço
+    const urlFinal = url ?? resultado?.dados.url;
+    if (urlFinal) {
+      novo.url = urlFinal;
       novo.dataAcesso = hoje;
+    }
+    // Local de publicação: aproveita o que você já informou para o mesmo periódico/livro
+    let localDaBiblioteca: string | undefined;
+    const veiculo = novo.textos.veiculo?.trim();
+    if (!novo.textos.localPublicacao?.trim() && veiculo && carregado) {
+      localDaBiblioteca = carregado.locais.get(normalizarParaBusca(veiculo));
+      if (localDaBiblioteca) novo.textos.localPublicacao = localDaBiblioteca;
     }
     if (preencherPalavras) novo.palavrasChave = palavrasImportadas.join('; ');
     // Guarda o valor importado de cada campo, já no formato salvo
     const norm = normalizarDadosFonte(montarDados(novo, [])) as unknown as Record<string, unknown>;
     const marcados: Record<string, string> = {};
-    const camposImportados = [...Object.keys(resultado?.origemDosCampos ?? {}), ...(url ? ['url'] : [])];
+    const camposImportados = [...Object.keys(resultado?.origemDosCampos ?? {}), ...(urlFinal ? ['url', 'dataAcesso'] : [])];
     for (const c of camposImportados) if (c !== 'tipo' && norm[c] !== undefined) marcados[c] = JSON.stringify(norm[c]);
     setImportados(marcados);
     setOrigem(resultado ? (resultado.servicos[0] ?? 'manual') : modo === 'link' ? 'url' : 'manual');
@@ -331,6 +346,7 @@ export function FormularioFonte() {
     setE(novo);
     setErros({});
     setVersaoForm((v) => v + 1);
+    if (localDaBiblioteca) avisar('sucesso', `Local “${localDaBiblioteca}” preenchido com base em outra fonte do mesmo periódico na sua biblioteca. Confira.`);
   }
 
   async function buscarAssuntosPeloDoi() {

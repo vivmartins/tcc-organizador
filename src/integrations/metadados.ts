@@ -51,6 +51,25 @@ export function separarNome(completo: string): Autor {
   return { tipo: 'pessoa', sobrenome: partes.slice(-n).join(' '), prenomes: partes.slice(0, -n).join(' ') };
 }
 
+/** "Título: subtítulo" → separa nas duas partes, quando o serviço não informa o subtítulo à parte. */
+export function separarTitulo(titulo?: string, subtitulo?: string): { titulo?: string; subtitulo?: string } {
+  if (!titulo || subtitulo) return { titulo, subtitulo };
+  const i = titulo.indexOf(': ');
+  if (i < 3 || i > titulo.length - 4) return { titulo };
+  return { titulo: titulo.slice(0, i).trim(), subtitulo: titulo.slice(i + 2).trim() };
+}
+
+/** Endereço da página do artigo (não o link do DOI, que já vai no campo DOI). */
+function urlDoArtigo(...candidatos: (string | null | undefined)[]): string | undefined {
+  for (const c of candidatos) {
+    const u = c?.trim();
+    if (!u || !/^https?:\/\//i.test(u)) continue;
+    if (/^https?:\/\/(dx\.)?doi\.org\//i.test(u)) continue;
+    return u;
+  }
+  return undefined;
+}
+
 function paginasDe(first?: string | null, last?: string | null): string | undefined {
   if (!first) return undefined;
   return last && last !== first ? `${first}-${last}` : first;
@@ -76,6 +95,8 @@ const TIPO_CROSSREF: Record<string, TipoPublicacao> = {
 interface PessoaCrossref { given?: string; family?: string; name?: string }
 interface MensagemCrossref {
   DOI?: string;
+  URL?: string;
+  resource?: { primary?: { URL?: string } };
   type?: string;
   title?: string[];
   subtitle?: string[];
@@ -122,9 +143,9 @@ export function converterCrossref(m: MensagemCrossref): Importado {
   const container = limparTexto(m['container-title']?.[0]);
   const d: Importado = {
     tipo,
-    titulo: limparTexto(m.title?.[0]),
-    subtitulo: limparTexto(m.subtitle?.[0]),
+    ...separarTitulo(limparTexto(m.title?.[0]), limparTexto(m.subtitle?.[0])),
     autores: pessoasCrossref(m.author),
+    url: urlDoArtigo(m.resource?.primary?.URL),
     ano: anoCrossref(m),
     doi: m.DOI,
     volume: limparTexto(m.volume),
@@ -175,7 +196,7 @@ interface ObraOpenAlex {
   publication_year?: number | null;
   type?: string | null;
   authorships?: { author?: { display_name?: string | null } | null; raw_author_name?: string | null }[];
-  primary_location?: { source?: { display_name?: string | null; type?: string | null; host_organization_name?: string | null } | null } | null;
+  primary_location?: { landing_page_url?: string | null; source?: { display_name?: string | null; type?: string | null; host_organization_name?: string | null } | null } | null;
   biblio?: { volume?: string | null; issue?: string | null; first_page?: string | null; last_page?: string | null } | null;
   keywords?: { display_name?: string | null; score?: number | null }[] | null;
   primary_topic?: TopicoOpenAlex | null;
@@ -208,7 +229,8 @@ export function converterOpenAlex(o: ObraOpenAlex): Importado {
   if (tipo === 'artigo_periodico' && fonte?.type === 'conference') tipo = 'trabalho_evento';
   const d: Importado = {
     tipo,
-    titulo: limparTexto(o.title ?? o.display_name),
+    ...separarTitulo(limparTexto(o.title ?? o.display_name)),
+    url: urlDoArtigo(o.primary_location?.landing_page_url),
     autores: (o.authorships ?? [])
       .map((a) => limparTexto(a.author?.display_name ?? a.raw_author_name))
       .filter((n): n is string => !!n)
