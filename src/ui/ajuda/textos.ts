@@ -1,6 +1,6 @@
 // Textos de ajuda de cada seção. Ficam todos aqui para facilitar a revisão.
 
-export type Secao = 'visao' | 'biblioteca' | 'fichamentos' | 'planejamento' | 'orientacoes' | 'conferencia' | 'dados';
+export type Secao = 'visao' | 'biblioteca' | 'fichamentos' | 'planejamento' | 'orientacoes' | 'conferencia' | 'auditoria' | 'dados';
 
 export interface TextoAjuda {
   titulo: string;
@@ -72,8 +72,21 @@ export const AJUDA: Record<Secao, TextoAjuda> = {
       'Comece pelo checklist sugerido ou crie o seu. Adapte os itens às exigências da sua instituição.',
       'Use a “Situação atual do projeto” para saber o que ainda falta: fontes com dados faltando, dados não conferidos e tarefas pendentes.',
       'Marque cada item quando concluir. “Mostrar só pendentes” ajuda a focar no que falta.',
-      'O app não confere o documento do TCC automaticamente: os itens são marcados por você.',
+      'Os itens são marcados por você. Para conferir citações e referências no arquivo do TCC, use a Auditoria do TCC.',
     ],
+  },
+  auditoria: {
+    titulo: 'Para que serve a Auditoria do TCC',
+    paraQue: 'Você envia o arquivo do TCC (Word ou PDF) e o app aponta pontos para conferir: citações sem referência, citações diretas diferentes do original e trechos parecidos demais com as suas fontes.',
+    passos: [
+      'Anexe o PDF de cada fonte (na página da fonte ou no quadro “Material das suas fontes”). O texto fica só no seu navegador; o arquivo não é guardado. Os trechos originais dos seus fichamentos também entram na comparação.',
+      'Envie o arquivo do TCC. Ele é lido aqui mesmo e não é guardado: ao fechar a aba, o resultado some.',
+      '“Citações e referências”: obras citadas sem referência, anos diferentes, referências nunca citadas e citações diretas sem página.',
+      '“Citações diretas”: compara cada trecho entre aspas (ou recuado) com o seu fichamento e com o texto da fonte, palavra por palavra e pela página.',
+      '“Semelhança com as fontes”: trechos iguais a uma fonte sem aspas e paráfrases muito próximas do original.',
+      'É uma ajuda para revisar, não um veredito: a leitura automática pode errar, e a comparação é só com as fontes que você cadastrou (não com a internet).',
+    ],
+    exemplo: 'O app encontrou “(Silva, 2021)” no texto, mas a referência diz 2020: você confere qual é o ano certo e corrige no Word.',
   },
   dados: {
     titulo: 'Por que fazer backup',

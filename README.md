@@ -34,10 +34,21 @@ Serviços externos usados, sempre a partir do navegador de quem usa:
 | Fichamentos | Citações (trecho original preservado), paráfrases, ideias, com página e capítulo |
 | Planejamento | Etapas, tarefas, cronograma, progresso por tarefas concluídas, planejamento sugerido |
 | Orientações | Pedidos do orientador, prazos, status e vínculo com tarefas |
+| Auditoria do TCC | Lê o TCC (Word ou PDF) e aponta: citações sem referência, ano diferente, referências não citadas, citações diretas sem página ou diferentes do fichamento/fonte, trechos iguais às fontes sem aspas e paráfrases muito próximas |
 | Conferência final | Checklist editável e situação atual do projeto |
 | Como funciona | Explicação de cada seção (também há ajuda dentro de cada aba) |
 
-Fora do escopo desta versão: auditoria automática do TCC completo (fase 2).
+### Auditoria do TCC
+
+- O arquivo do TCC é lido no navegador (Word com `fflate` + leitor XML; PDF com pdf.js) e **não é guardado**.
+- Para a comparação, cada fonte pode ter o **texto do PDF** (ou o resumo do OpenAlex) guardado no navegador
+  (tabela `textos`, incluída no backup); o arquivo PDF em si não é guardado. Os trechos originais dos
+  fichamentos também entram.
+- A checagem de cópia usa sequências de 8 palavras como sementes, junta trechos iguais de 12+ palavras e
+  mede a sobreposição de sequências de 3 palavras por frase para paráfrases próximas.
+- Compara só com as fontes cadastradas, não com a internet. O resultado é apresentado como pontos para conferir.
+
+Ainda não incluído: conferência da formatação do Word (margens, fonte, espaçamento) e da formatação de cada referência da lista.
 
 ## Rodar no computador (para desenvolvimento)
 
@@ -52,7 +63,7 @@ npm run dev        # abre em http://localhost:5173 e atualiza ao salvar o códig
 
 ```bash
 npm test           # testes automáticos: ABNT, duplicatas, busca, banco local, backup,
-                   # planejamento, orientações, importação, palavras-chave e tradução
+                   # planejamento, orientações, importação, palavras-chave, tradução e auditoria
 npm run typecheck  # verificação de tipos (TypeScript)
 npm run build      # gera a versão final em dist/
 npm run preview    # abre a versão final em http://localhost:4173
@@ -78,10 +89,12 @@ Para publicar em outro lugar (Netlify, Vercel…), basta servir a pasta `dist/` 
 src/
   domain/        regras puras, sem banco nem internet (fáceis de testar):
                  ABNT (referências e citações), duplicatas, busca, validação,
-                 fichamentos, planejamento, orientações, palavras-chave
+                 fichamentos, planejamento, orientações, palavras-chave,
+                 auditoria/ (citações, referências, comparação de trechos, cópia)
   data/          banco no navegador (Dexie/IndexedDB): projetos, fontes, tags, fichas,
                  etapas, tarefas, orientações, checklist, backup manual e automático
-  integrations/  serviços externos: Crossref/OpenAlex, leitura de PDF (pdf.js), tradução
+  integrations/  serviços externos: Crossref/OpenAlex, leitura de PDF (pdf.js), tradução,
+                 leitura do arquivo do TCC (.docx e PDF)
   ui/            telas e componentes (React + Tailwind), textos de ajuda em ui/ajuda/textos.ts
 supabase/        modelo de dados para uma possível sincronização em nuvem (não usado)
 ```

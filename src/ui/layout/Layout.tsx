@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Library, NotebookPen, CalendarCheck, MessagesSquare, ListChecks,
-  ChevronsUpDown, Check, Plus, Settings2, HardDriveDownload, Menu, X, BookMarked, CircleHelp,
+  ChevronsUpDown, Check, Plus, Settings2, HardDriveDownload, Menu, X, BookMarked, CircleHelp, FileSearch,
 } from 'lucide-react';
 import { cx } from '../componentes/base.tsx';
 import { useProjeto } from '../projetoAtivo.tsx';
@@ -15,6 +15,7 @@ const SECOES = [
   { para: '/fichamentos', rotulo: 'Fichamentos', icone: NotebookPen },
   { para: '/planejamento', rotulo: 'Planejamento', icone: CalendarCheck },
   { para: '/orientacoes', rotulo: 'Orientações', icone: MessagesSquare },
+  { para: '/auditoria', rotulo: 'Auditoria do TCC', icone: FileSearch },
   { para: '/conferencia', rotulo: 'Conferência final', icone: ListChecks },
 ];
 

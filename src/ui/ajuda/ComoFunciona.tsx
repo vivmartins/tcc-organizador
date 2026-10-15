@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { LayoutDashboard, Library, NotebookPen, CalendarCheck, MessagesSquare, ListChecks, HardDriveDownload, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, Library, NotebookPen, CalendarCheck, MessagesSquare, ListChecks, HardDriveDownload, ShieldCheck, FileSearch } from 'lucide-react';
 import { CabecalhoPagina, Cartao, Selo } from '../componentes/base.tsx';
 
 const SECOES = [
@@ -8,6 +8,7 @@ const SECOES = [
   { icone: NotebookPen, nome: 'Fichamentos', para: '/fichamentos', texto: 'Suas anotações de leitura: citações com página, resumos, ideias e dados, ligados à fonte e ao capítulo do TCC.', pronta: true },
   { icone: CalendarCheck, nome: 'Planejamento', para: '/planejamento', texto: 'Etapas, tarefas e prazos, com cronograma e o progresso calculado pelo que você concluiu.', pronta: true },
   { icone: MessagesSquare, nome: 'Orientações', para: '/orientacoes', texto: 'O que o orientador pediu, com prazos, status e vínculo com as tarefas do planejamento.', pronta: true },
+  { icone: FileSearch, nome: 'Auditoria do TCC', para: '/auditoria', texto: 'Envie o arquivo do TCC e veja citações sem referência, citações diretas diferentes do original e trechos parecidos demais com as suas fontes.', pronta: true },
   { icone: ListChecks, nome: 'Conferência final', para: '/conferencia', texto: 'Checklist editável para preparar a entrega, com a situação atual dos seus cadastros.', pronta: true },
   { icone: HardDriveDownload, nome: 'Backup e dados', para: '/dados', texto: 'Baixe uma cópia de segurança dos seus dados ou recupere um backup.', pronta: true },
 ];
@@ -17,6 +18,7 @@ const PASSOS = [
   ['Confira os dados e gere as referências', 'Cada fonte mostra a referência ABNT e aponta o que está faltando ou precisa ser conferido.'],
   ['Fiche enquanto lê', 'Registre trechos, ideias e dados com a página e o capítulo onde vai usá-los.'],
   ['Escreva com tudo à mão', 'Filtre as fichas pelo capítulo e copie os trechos já com a citação no formato ABNT.'],
+  ['Audite antes de entregar', 'Envie o arquivo do TCC na Auditoria para conferir citações, referências e trechos parecidos com as fontes.'],
   ['Faça backup', 'Seus dados ficam só neste navegador. Guarde uma cópia toda semana.'],
 ];
 

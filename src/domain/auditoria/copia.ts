@@ -163,7 +163,12 @@ export function checarCopia(corpo: ParagrafoCorpo[], citacoes: Citacao[], direta
       const fim = ini + m[0].length;
       if (marcados.some(([a, b]) => Math.min(b, fim) - Math.max(a, ini) > 0.3 * (fim - ini))) continue;
       if (dentroDeCitacao(ini, fim)) continue;
-      const fw = w.filter((x) => x.inicio >= ini && x.fim <= fim);
+      // só as palavras da própria autora: fora de aspas, de citações recuadas e das citações (Silva, 2020)
+      const fw = w.filter(
+        (x) => x.inicio >= ini && x.fim <= fim &&
+          !diretasPar.some((d) => x.inicio >= d.inicio && x.fim <= d.fim) &&
+          !citsPar.some((c) => x.inicio >= c.inicio && x.fim <= c.fim),
+      );
       if (fw.length < MINIMO_PALAVRAS_FRASE) continue;
       const contagem = new Map<FonteAuditoria, { n: number; di: number }>();
       let total = 0;

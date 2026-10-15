@@ -14,6 +14,7 @@ import { Orientacoes } from './ui/paginas/Orientacoes.tsx';
 import { ComoFunciona } from './ui/ajuda/ComoFunciona.tsx';
 import { Planejamento } from './ui/paginas/planejamento/Planejamento.tsx';
 import { Conferencia } from './ui/paginas/Conferencia.tsx';
+import { Auditoria } from './ui/paginas/Auditoria.tsx';
 
 /** Cada navegação para "Cadastrar fonte" começa com um formulário limpo. */
 function NovaFonte() {
@@ -36,6 +37,7 @@ function Rotas() {
         <Route path="fichamentos" element={<Fichamentos />} />
         <Route path="planejamento" element={<Planejamento />} />
         <Route path="orientacoes" element={<Orientacoes />} />
+        <Route path="auditoria" element={<Auditoria />} />
         <Route path="conferencia" element={<Conferencia />} />
         <Route path="projeto" element={<EditarProjeto />} />
         <Route path="projeto/novo" element={<NovoProjeto />} />
