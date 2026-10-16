@@ -194,15 +194,19 @@ function AbaReferencia({ fonte, formato: doProjeto }: { fonte: Fonte; formato: F
           )}
         </div>
         <p className="rounded-md bg-fundo px-4 py-3 font-serif text-[15px] leading-relaxed text-marinho-900">
-          {vancouver && <span className="mr-1">{fonte.numeroVancouver ? `${fonte.numeroVancouver}.` : '[nº?]'}</span>}
+          {vancouver && fonte.numeroVancouver && <span>{fonte.numeroVancouver}. </span>}
           <span dangerouslySetInnerHTML={{ __html: ref.html }} />
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <Botao variante="primario" onClick={() => copiarComAviso(ref.texto, ref.html, 'Referência')}><Copy size={15} /> Copiar referência</Botao>
+          <Botao variante="primario" onClick={() => {
+            const n = vancouver && fonte.numeroVancouver ? `${fonte.numeroVancouver}. ` : '';
+            void copiarComAviso(n + ref.texto, n + ref.html, 'Referência');
+          }}><Copy size={15} /> Copiar referência</Botao>
           <BotaoLink para={`/biblioteca/${fonte.id}/editar`}><Pencil size={14} /> Corrigir dados</BotaoLink>
         </div>
         <p className="mt-3 text-xs text-cinza-500">
-          {vancouver ? 'Formatada no estilo Vancouver (ICMJE/NLM), com os termos em português.' : 'Formatada pela NBR 6023:2025.'} Uma referência formatada não é automaticamente correta: confira os dados com a publicação original.
+          {vancouver ? 'Formatada no estilo Vancouver (ICMJE/NLM), com os termos em português.' : 'Formatada pela NBR 6023:2025.'}
+          {vancouver && !fonte.numeroVancouver && ' No Vancouver, cada referência leva o número da ordem em que a obra aparece pela primeira vez no TCC; esta fonte ainda não tem número (veja “Citação no texto”, abaixo).'} Uma referência formatada não é automaticamente correta: confira os dados com a publicação original.
           {norma !== doProjeto.norma && <> Seu projeto usa {doProjeto.norma === 'vancouver' ? 'Vancouver' : 'ABNT'}; para mudar a norma de todo o projeto, vá em <Link to="/projeto" className="text-acao-700 hover:underline">Dados do projeto</Link>.</>}
         </p>
       </Cartao>
