@@ -140,12 +140,12 @@ function ListaPendencias({ titulo, itens, tom, acao }: { titulo: string; itens: 
   );
 }
 
-function AbaReferencia({ fonte, etAl }: { fonte: Fonte; etAl?: boolean }) {
+function AbaReferencia({ fonte, etAl, maiusculas }: { fonte: Fonte; etAl?: boolean; maiusculas?: boolean }) {
   const avisar = useAvisos();
   const ref = useMemo(() => gerarReferencia(fonte, { etAlAPartirDe4: etAl }), [fonte, etAl]);
   const [estilo, setEstilo] = useState<EstiloCitacao>('parentetica');
   const [pagina, setPagina] = useState('');
-  const citacao = gerarCitacao(fonte, { estilo, pagina });
+  const citacao = gerarCitacao(fonte, { estilo, pagina, maiusculas });
 
   const obrig = ref.pendencias.filter((p) => p.nivel === 'obrigatorio');
   const recom = ref.pendencias.filter((p) => p.nivel === 'recomendado');
@@ -295,7 +295,7 @@ export function PaginaFonte() {
       </div>
 
       <div role="tabpanel">
-        {aba === 'referencia' && <AbaReferencia fonte={fonte} etAl={projeto.etAlNasReferencias} />}
+        {aba === 'referencia' && <AbaReferencia fonte={fonte} etAl={projeto.etAlNasReferencias} maiusculas={projeto.citacaoMaiusculas} />}
         {aba === 'dados' && (
           <div className="flex flex-col gap-4">
             <AbaDados fonte={fonte} nomesTags={nomesTags} />

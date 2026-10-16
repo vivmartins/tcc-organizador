@@ -44,9 +44,9 @@ export function validarFicha(f: ConteudoFicha): Record<string, string> {
 }
 
 /** Texto da ficha completa: conteúdo + identificação da fonte (citação e referência). */
-export function textoDaFicha(f: ConteudoFicha, fonte: DadosBibliograficos, opcoes: { etAlAPartirDe4?: boolean } = {}): string {
+export function textoDaFicha(f: ConteudoFicha, fonte: DadosBibliograficos, opcoes: { etAlAPartirDe4?: boolean; citacaoMaiusculas?: boolean } = {}): string {
   const partes: string[] = [`[${ROTULO_TIPO_FICHAMENTO[f.tipo]}]${tem(f.tema) ? ` Tema: ${f.tema!.trim()}` : ''}`];
-  const citacao = gerarCitacao(fonte, { pagina: f.pagina });
+  const citacao = gerarCitacao(fonte, { pagina: f.pagina, maiusculas: opcoes.citacaoMaiusculas });
   if (tem(f.trechoOriginal)) partes.push(`“${f.trechoOriginal}” ${citacao}`);
   if (tem(f.parafrase)) partes.push(`Resumo/paráfrase: ${f.parafrase!.trim()}${tem(f.trechoOriginal) ? '' : ` ${citacao}`}`);
   if (tem(f.interpretacao)) partes.push(`Minha interpretação: ${f.interpretacao!.trim()}`);

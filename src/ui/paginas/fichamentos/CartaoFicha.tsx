@@ -26,14 +26,14 @@ function BotaoIcone({ rotulo, onClick, perigo, children }: { rotulo: string; onC
   );
 }
 
-export function CartaoFicha({ ficha, fonte, nomesTags, mostrarFonte, etAl, aoEditar }: { ficha: Fichamento; fonte?: Fonte; nomesTags: Map<string, string>; mostrarFonte?: boolean; etAl?: boolean; aoEditar: () => void }) {
+export function CartaoFicha({ ficha, fonte, nomesTags, mostrarFonte, etAl, maiusculas, aoEditar }: { ficha: Fichamento; fonte?: Fonte; nomesTags: Map<string, string>; mostrarFonte?: boolean; etAl?: boolean; maiusculas?: boolean; aoEditar: () => void }) {
   const avisar = useAvisos();
   const [excluindo, setExcluindo] = useState(false);
 
   async function copiarFicha() {
     if (!fonte) return;
     try {
-      await copiar(textoDaFicha(ficha, fonte, { etAlAPartirDe4: etAl }));
+      await copiar(textoDaFicha(ficha, fonte, { etAlAPartirDe4: etAl, citacaoMaiusculas: maiusculas }));
       avisar('sucesso', 'Ficha completa copiada, com a identificação da fonte.');
     } catch {
       avisar('erro', 'Não foi possível copiar. Verifique a permissão de área de transferência do navegador.');
@@ -58,7 +58,7 @@ export function CartaoFicha({ ficha, fonte, nomesTags, mostrarFonte, etAl, aoEdi
       {ficha.trechoOriginal && (
         <blockquote className="mt-3 whitespace-pre-wrap border-l-2 border-acao-100 pl-3 font-serif text-[15px] leading-relaxed text-marinho-900">
           “{ficha.trechoOriginal}”
-          {fonte && <span className="whitespace-nowrap font-sans text-xs text-cinza-500"> {gerarCitacao(fonte, { pagina: ficha.pagina })}</span>}
+          {fonte && <span className="whitespace-nowrap font-sans text-xs text-cinza-500"> {gerarCitacao(fonte, { pagina: ficha.pagina, maiusculas })}</span>}
         </blockquote>
       )}
       {ficha.parafrase && (

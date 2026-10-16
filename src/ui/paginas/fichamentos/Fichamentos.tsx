@@ -114,7 +114,7 @@ export function ListaDeFichas({ fonteId }: { fonteId?: string }) {
           ) : (
             <div className="flex flex-col gap-3">
               {filtradas.map((f) => (
-                <CartaoFicha key={f.id} ficha={f} fonte={fontesPorId.get(f.fonteId)} nomesTags={nomesTags} mostrarFonte={!fonteId} etAl={projeto.etAlNasReferencias} aoEditar={() => setEditando(f)} />
+                <CartaoFicha key={f.id} ficha={f} fonte={fontesPorId.get(f.fonteId)} nomesTags={nomesTags} mostrarFonte={!fonteId} etAl={projeto.etAlNasReferencias} maiusculas={projeto.citacaoMaiusculas} aoEditar={() => setEditando(f)} />
               ))}
             </div>
           )}

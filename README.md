@@ -110,7 +110,7 @@ supabase/        modelo de dados para uma possível sincronização em nuvem (n�
 
 - **Modo local em vez de servidor**: custo zero e nenhuma responsabilidade sobre dados de terceiros.
   A troca é que os dados não sincronizam sozinhos entre aparelhos (o backup resolve).
-- **Normas ABNT**: NBR 6023:2025 para referências (DOI como endereço completo, https://doi.org/...) e NBR 10520:2023 para citações.
+- **Normas ABNT**: NBR 6023:2025 para referências (DOI como endereço completo, https://doi.org/...) e NBR 10520:2023 para citações, com opção no projeto para o sobrenome em MAIÚSCULAS entre parênteses — (SILVA, 2021) —, padrão anterior que algumas instituições ainda pedem.
   Uma referência formatada não é automaticamente correta: o app mostra o que falta ou precisa ser
   conferido, e cada dado pode ser marcado como "conferido".
 - **Nada é inventado**: dados ausentes aparecem como pendência (ex.: `[ANO?]`), nunca preenchidos por suposição.

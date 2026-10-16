@@ -5,6 +5,9 @@
 //  * Até 3 autores separados por ponto e vírgula entre parênteses: (Silva; Souza; Lima, 2021).
 //    Na forma narrativa: "Silva, Souza e Lima (2021)".
 //  * 4 ou mais autores: primeiro autor seguido de "et al.".
+//  * Opção "maiusculas" (padrão anterior, ainda exigido por algumas instituições): entre parênteses o
+//    sobrenome vai em MAIÚSCULAS — (SILVA; SOUZA, 2021), (SZYCHOT et al., 2014). Na forma narrativa
+//    continua só a inicial maiúscula: "Silva (2021)".
 //  * Entidade: nome por extenso como cadastrado; com hierarquia ("Brasil. Ministério da Saúde"),
 //    usa-se a primeira parte.
 //  * Sem autoria: primeira palavra do título (e a seguinte, se for artigo) seguida de [...].
@@ -18,6 +21,8 @@ export interface OpcoesCitacao {
   estilo?: EstiloCitacao;
   /** Página ou localização do trecho (ex.: "15", "15-16", "seção 3"). */
   pagina?: string;
+  /** Sobrenome em MAIÚSCULAS na citação entre parênteses. */
+  maiusculas?: boolean;
 }
 
 const PARTICULAS = new Set(['de', 'da', 'do', 'das', 'dos', 'e', "d'", 'van', 'von', 'del', 'della', 'di', 'du']);
@@ -54,9 +59,13 @@ function entradaPorTitulo(titulo: string): string {
   return `${trecho.charAt(0).toLocaleUpperCase('pt-BR')}${trecho.slice(1)} [...]`;
 }
 
-function autoria(d: DadosBibliograficos, estilo: EstiloCitacao): string {
-  const nomes = (d.autores ?? []).filter((a) => limpo(a.sobrenome)).map(nomeNaCitacao);
-  if (nomes.length === 0) return entradaPorTitulo(d.titulo);
+function autoria(d: DadosBibliograficos, estilo: EstiloCitacao, maiusculas = false): string {
+  const caixa = (s: string) => (maiusculas && estilo === 'parentetica' ? s.toLocaleUpperCase('pt-BR') : s);
+  const nomes = (d.autores ?? []).filter((a) => limpo(a.sobrenome)).map((a) => caixa(nomeNaCitacao(a)));
+  if (nomes.length === 0) {
+    const e = entradaPorTitulo(d.titulo);
+    return e.endsWith(' [...]') ? `${caixa(e.slice(0, -6))} [...]` : caixa(e);
+  }
   if (nomes.length >= 4) return `${nomes[0]} et al.`;
   if (estilo === 'parentetica') return nomes.join('; ');
   if (nomes.length === 1) return nomes[0];
@@ -72,6 +81,6 @@ export function gerarCitacao(d: DadosBibliograficos, opcoes: OpcoesCitacao = {})
       ? `, ${formatarPaginas(pagina)}`
       : `, ${pagina}`
     : '';
-  const quem = autoria(d, estilo);
+  const quem = autoria(d, estilo, opcoes.maiusculas);
   return estilo === 'parentetica' ? `(${quem}, ${ano}${local})` : `${quem} (${ano}${local})`;
 }

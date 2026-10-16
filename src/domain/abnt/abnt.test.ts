@@ -271,3 +271,16 @@ test('sobrenomes digitados em maiúsculas são ajustados; caixa mista é respeit
   assert.equal(capitalizarSobrenome('OLIVEIRA DA COSTA'), 'Oliveira da Costa');
   assert.equal(capitalizarSobrenome('McDonald'), 'McDonald');
 });
+
+test('citação com sobrenome em MAIÚSCULAS (opção da instituição)', () => {
+  const quatro: DadosBibliograficos = { ...artigo, autores: [P('Szychot', 'E.'), P('Apps', 'J.'), P('Pritchard-Jones', 'K.'), P('Lima', 'A.')], ano: 2014 };
+  assert.equal(gerarCitacao(quatro, { maiusculas: true }), '(SZYCHOT et al., 2014)');
+  assert.equal(gerarCitacao({ ...artigo, autores: [P('Salvajoli', 'J. V.')], ano: 2013 }, { maiusculas: true, pagina: '45' }), '(SALVAJOLI, 2013, p. 45)');
+  assert.equal(gerarCitacao(artigo, { maiusculas: true }), '(SILVA; SOUZA, 2021)');
+  // forma narrativa continua só com a inicial maiúscula
+  assert.equal(gerarCitacao(artigo, { maiusculas: true, estilo: 'narrativa' }), 'Silva e Souza (2021)');
+  // sem autoria: primeira palavra do título em maiúsculas
+  assert.equal(gerarCitacao({ ...artigo, autores: [], titulo: 'Anuário estatístico' }, { maiusculas: true }), '(ANUÁRIO [...], 2021)');
+  // padrão: NBR 10520:2023
+  assert.equal(gerarCitacao(artigo), '(Silva; Souza, 2021)');
+});

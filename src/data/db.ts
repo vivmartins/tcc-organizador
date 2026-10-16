@@ -28,6 +28,8 @@ export interface Projeto extends Datas {
   prazoFinal?: string; // AAAA-MM-DD
   /** Com 4+ autores, usar "et al." nas referências. */
   etAlNasReferencias?: boolean;
+  /** Sobrenome em MAIÚSCULAS na citação entre parênteses: (SILVA, 2021). Padrão anterior à NBR 10520:2023, ainda pedido por algumas instituições. */
+  citacaoMaiusculas?: boolean;
   /** Projeto de exemplo, criado para conhecer o app. */
   exemplo?: boolean;
 }

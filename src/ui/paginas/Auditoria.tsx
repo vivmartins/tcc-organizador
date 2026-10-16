@@ -134,7 +134,7 @@ export function Auditoria() {
             ))}
           </div>
           <div role="tabpanel">
-            {aba === 'citacoes' && <AbaCitacoes r={r} />}
+            {aba === 'citacoes' && <AbaCitacoes r={r} maiusculas={!!projeto.citacaoMaiusculas} />}
             {aba === 'diretas' && <AbaDiretas r={r} />}
             {aba === 'copia' && <AbaCopia r={r} />}
           </div>
@@ -188,12 +188,15 @@ function TudoCerto({ children }: { children: ReactNode }) {
 // Aba 1: citações × referências
 // ---------------------------------------------------------------------
 
-function AbaCitacoes({ r }: { r: ResultadoAuditoria }) {
+function AbaCitacoes({ r, maiusculas }: { r: ResultadoAuditoria; maiusculas: boolean }) {
   const c = r.citacoes;
   const texto = (pi: number) => r.corpo[pi]?.texto ?? '';
   const sem = c.problemas.filter((p) => p.tipo === 'sem_referencia');
   const ano = c.problemas.filter((p) => p.tipo === 'ano_diferente');
   const misturado = c.estilos.maiusculas > 0 && c.estilos.minusculas > 0;
+  // Fora do padrão escolhido no projeto (só quando o arquivo usa um padrão só, o outro caso é o "misturado").
+  const foraDoPadrao = !misturado && (maiusculas ? c.estilos.minusculas > 0 : c.estilos.maiusculas > 0);
+  const padrao = maiusculas ? 'MAIÚSCULAS, como (SILVA, 2020)' : 'só a inicial maiúscula, como (Silva, 2020)';
   return (
     <div className="flex flex-col gap-3">
       {!r.achouReferencias && (
@@ -247,7 +250,13 @@ function AbaCitacoes({ r }: { r: ResultadoAuditoria }) {
       {misturado && (
         <p className="flex gap-2 rounded-lg border border-borda bg-superficie px-4 py-3 text-sm text-cinza-600">
           <Info size={16} className="mt-0.5 shrink-0 text-acao-600" />
-          <span>Nos parênteses, há {c.estilos.maiusculas} citações com o sobrenome em MAIÚSCULAS e {c.estilos.minusculas} em minúsculas. A NBR 10520:2023 usa minúsculas, como (Silva, 2020), mas a sua instituição pode pedir outro padrão. O importante é usar um só. (Siglas, como IBGE, podem aparecer aqui.)</span>
+          <span>Nos parênteses, há {c.estilos.maiusculas} citações com o sobrenome em MAIÚSCULAS e {c.estilos.minusculas} em minúsculas. O seu projeto está configurado para {padrao}. O importante é usar um só padrão. (Siglas, como IBGE, podem aparecer aqui.)</span>
+        </p>
+      )}
+      {foraDoPadrao && (
+        <p className="flex gap-2 rounded-lg border border-borda bg-superficie px-4 py-3 text-sm text-cinza-600">
+          <Info size={16} className="mt-0.5 shrink-0 text-acao-600" />
+          <span>As citações entre parênteses do arquivo estão com o sobrenome em {maiusculas ? 'minúsculas' : 'MAIÚSCULAS'}, mas o seu projeto está configurado para {padrao}. Confira qual padrão a sua instituição pede; dá para mudar em Projeto.</span>
         </p>
       )}
     </div>

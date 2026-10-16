@@ -15,6 +15,7 @@ function FormularioProjeto({ inicial, textoBotao, aoSalvar }: { inicial?: Projet
     dataInicio: inicial?.dataInicio ?? '',
     prazoFinal: inicial?.prazoFinal ?? '',
     etAlNasReferencias: inicial?.etAlNasReferencias ?? false,
+    citacaoMaiusculas: inicial?.citacaoMaiusculas ?? false,
   });
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
@@ -64,6 +65,18 @@ function FormularioProjeto({ inicial, textoBotao, aoSalvar }: { inicial?: Projet
           <span className="block text-xs text-cinza-500">A NBR 6023 recomenda listar todos, mas permite o et al. Siga o que sua instituição pede.</span>
         </span>
       </label>
+      <fieldset className="flex flex-col gap-2 text-sm text-marinho-700">
+        <legend className="mb-1 font-medium text-marinho-900">Sobrenome na citação entre parênteses</legend>
+        <label className="flex items-start gap-2.5">
+          <input type="radio" name="caixaCitacao" className="mt-0.5 size-4 accent-acao-600" checked={!d.citacaoMaiusculas} onChange={() => setD({ ...d, citacaoMaiusculas: false })} />
+          <span>(Silva, 2021) <span className="text-cinza-500">— só a inicial maiúscula, como na NBR 10520:2023</span></span>
+        </label>
+        <label className="flex items-start gap-2.5">
+          <input type="radio" name="caixaCitacao" className="mt-0.5 size-4 accent-acao-600" checked={!!d.citacaoMaiusculas} onChange={() => setD({ ...d, citacaoMaiusculas: true })} />
+          <span>(SILVA, 2021) <span className="text-cinza-500">— tudo em maiúsculas, padrão anterior que algumas instituições ainda pedem</span></span>
+        </label>
+        <span className="text-xs text-cinza-500">Vale para as citações que a plataforma monta. Na forma narrativa fica sempre só a inicial maiúscula: “Segundo Silva (2021)”.</span>
+      </fieldset>
       {erro && !erroNome && !erroPrazo && <p role="alert" className="text-sm text-perigo-700">{erro}</p>}
       <div>
         <Botao type="submit" variante="primario" disabled={salvando}>{textoBotao}</Botao>
