@@ -53,17 +53,18 @@ const TONS_ICONE = {
 } as const;
 
 function Indicador({ rotulo, valor, detalhe, icone, tom, para }: { rotulo: string; valor: ReactNode; detalhe?: ReactNode; icone: ReactNode; tom: keyof typeof TONS_ICONE; para?: string }) {
+  // Em cartões estreitos (4 por linha em telas médias), o ícone vai para cima para o valor caber sem vazar.
   const conteudo = (
-    <div className="flex gap-3.5">
+    <div className="flex flex-col gap-3 @[15rem]:flex-row @[15rem]:gap-3.5">
       <span className={cx('flex size-11 shrink-0 items-center justify-center rounded-md', TONS_ICONE[tom])}>{icone}</span>
       <div className="min-w-0">
         <div className="text-[13px] font-medium text-cinza-600">{rotulo}</div>
-        <div className="mt-1 text-2xl font-extrabold tracking-tight">{valor}</div>
+        <div className="mt-1 text-2xl font-extrabold tracking-tight break-words">{valor}</div>
         {detalhe && <div className="mt-1 text-xs text-cinza-500">{detalhe}</div>}
       </div>
     </div>
   );
-  const classe = 'block rounded-lg border border-borda bg-superficie p-4';
+  const classe = '@container block rounded-lg border border-borda bg-superficie p-4';
   return para ? <Link to={para} className={cx(classe, 'hover:border-borda-forte')}>{conteudo}</Link> : <div className={classe}>{conteudo}</div>;
 }
 
