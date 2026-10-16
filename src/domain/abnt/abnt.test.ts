@@ -8,7 +8,7 @@ import { gerarCitacao, capitalizarSobrenome } from './citacao.ts';
 const P = (sobrenome: string, prenomes?: string) => ({ tipo: 'pessoa' as const, sobrenome, prenomes });
 
 // ---------------------------------------------------------------------
-// Referências — NBR 6023:2018
+// Referências — NBR 6023:2025
 // ---------------------------------------------------------------------
 
 const artigo: DadosBibliograficos = {
@@ -33,11 +33,17 @@ test('artigo de periódico completo', () => {
     r.texto,
     'SILVA, Maria Aparecida; SOUZA, João. Humanização no atendimento em radioterapia: revisão narrativa. ' +
       'Revista Brasileira de Cancerologia, Rio de Janeiro, v. 67, n. 2, p. 45-60, 2021. ' +
-      'DOI: 10.32635/2176-9745.RBC.2021v67n2.1234. ' +
+      'DOI: https://doi.org/10.32635/2176-9745.RBC.2021v67n2.1234. ' +
       'Disponível em: https://rbc.inca.gov.br/index.php/revista/article/view/1234. Acesso em: 14 out. 2026.',
   );
   assert.ok(r.html.includes('<strong>Revista Brasileira de Cancerologia</strong>,'));
   assert.equal(r.completa, true);
+});
+
+test('DOI sai como endereço completo, qualquer que seja a forma digitada (NBR 6023:2025)', () => {
+  for (const doi of ['10.1590/abc.2020', 'doi:10.1590/abc.2020', 'http://dx.doi.org/10.1590/abc.2020']) {
+    assert.ok(gerarReferencia({ ...artigo, doi }).texto.includes('DOI: https://doi.org/10.1590/abc.2020. Disponível em:'), doi);
+  }
 });
 
 test('livro com edição e subtítulo (só o título em negrito)', () => {

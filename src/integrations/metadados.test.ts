@@ -87,7 +87,7 @@ describe('conversões', () => {
     expect(d.editora).toBeUndefined(); // empresa que publica a revista não entra
     expect(gerarReferencia(d).texto).toBe(
       'SILVA, Maria Aparecida; SOUZA, João. Humanização no atendimento em radioterapia: revisão narrativa. ' +
-        'Revista de Saúde Pública, v. 44, n. 1, p. 1-9, 2010. DOI: 10.1590/S0034-89102010000100001.',
+        'Revista de Saúde Pública, v. 44, n. 1, p. 1-9, 2010. DOI: https://doi.org/10.1590/S0034-89102010000100001.',
     );
   });
 
@@ -95,7 +95,7 @@ describe('conversões', () => {
     const d = converterCrossref(CROSSREF_CAPITULO.message) as DadosBibliograficos;
     expect(d.tipo).toBe('capitulo_livro');
     expect(gerarReferencia(d).texto).toBe(
-      'LIMA, Ana. Patient communication in radiotherapy. In: PEREIRA, Carlos (org.). Supportive Care in Oncology. Cham: Springer International Publishing, 2019. p. 33-50. DOI: 10.1007/978-3-030-00000-0_3.',
+      'LIMA, Ana. Patient communication in radiotherapy. In: PEREIRA, Carlos (org.). Supportive Care in Oncology. Cham: Springer International Publishing, 2019. p. 33-50. DOI: https://doi.org/10.1007/978-3-030-00000-0_3.',
     );
   });
 

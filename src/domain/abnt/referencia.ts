@@ -1,4 +1,4 @@
-// Gerador de referências — ABNT NBR 6023:2018 (com errata 2:2023).
+// Gerador de referências — ABNT NBR 6023:2025 (DOI como endereço completo: https://doi.org/...).
 //
 // Ideia central: a referência é montada como uma lista de "segmentos"
 // (trechos de texto, alguns em negrito). A partir dela geramos tanto o
@@ -290,7 +290,7 @@ function titulo(m: Montador, d: DadosBibliograficos, destacar: boolean, temAutor
 }
 
 function online(m: Montador, d: DadosBibliograficos) {
-  if (tem(d.doi)) m.add(`DOI: ${limparDoi(d.doi!)}`).fecharFrase();
+  if (tem(d.doi)) m.add(`DOI: https://doi.org/${limparDoi(d.doi!)}`).fecharFrase();
   if (tem(d.url)) {
     m.add(`Disponível em: ${limpo(d.url)}`).fecharFrase();
     const data = tem(d.dataAcesso) ? formatarDataAcesso(d.dataAcesso!) : null;

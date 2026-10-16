@@ -178,7 +178,7 @@ function AbaReferencia({ fonte, etAl }: { fonte: Fonte; etAl?: boolean }) {
           <BotaoLink para={`/biblioteca/${fonte.id}/editar`}><Pencil size={14} /> Corrigir dados</BotaoLink>
         </div>
         <p className="mt-3 text-xs text-cinza-500">
-          Formatada pela NBR 6023:2018. Uma referência formatada não é automaticamente correta: confira os dados com a publicação original.
+          Formatada pela NBR 6023:2025. Uma referência formatada não é automaticamente correta: confira os dados com a publicação original.
         </p>
       </Cartao>
 

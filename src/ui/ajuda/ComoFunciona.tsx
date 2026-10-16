@@ -65,7 +65,7 @@ export function ComoFunciona() {
       </Cartao>
 
       <p className="mt-6 text-xs leading-relaxed text-cinza-500">
-        As referências seguem a ABNT NBR 6023:2018 e as citações, a NBR 10520:2023. Uma referência formatada não é automaticamente correta: confira sempre os dados com a publicação original e com as normas da sua instituição.
+        As referências seguem a ABNT NBR 6023:2025 e as citações, a NBR 10520:2023. Uma referência formatada não é automaticamente correta: confira sempre os dados com a publicação original e com as normas da sua instituição.
       </p>
     </div>
   );

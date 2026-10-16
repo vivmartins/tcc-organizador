@@ -35,7 +35,7 @@ Serviços externos usados, sempre a partir do navegador de quem usa:
 | Início (sem projeto) | Entrada livre: a pessoa vê cada seção, abre um projeto de exemplo fictício ou inicia o próprio projeto quando quiser |
 | Visão geral | Indicadores calculados dos dados reais, prazo, próximas tarefas, atalhos |
 | Biblioteca | Cadastro manual ou por DOI/link/PDF, busca sem acento, filtros, duplicatas, temas sugeridos |
-| Página da fonte | Referência ABNT (NBR 6023:2018) com pendências, citação (NBR 10520:2023), resumo, fichas |
+| Página da fonte | Referência ABNT (NBR 6023:2025) com pendências, citação (NBR 10520:2023), resumo, fichas |
 | Fichamentos | Citações (trecho original preservado), paráfrases, ideias, com página e capítulo |
 | Planejamento | Etapas, tarefas, cronograma, progresso por tarefas concluídas, planejamento sugerido |
 | Orientações | Pedidos do orientador, prazos, status e vínculo com tarefas |
@@ -110,7 +110,7 @@ supabase/        modelo de dados para uma possível sincronização em nuvem (n�
 
 - **Modo local em vez de servidor**: custo zero e nenhuma responsabilidade sobre dados de terceiros.
   A troca é que os dados não sincronizam sozinhos entre aparelhos (o backup resolve).
-- **Normas ABNT**: NBR 6023:2018 (com errata 2:2023) para referências e NBR 10520:2023 para citações.
+- **Normas ABNT**: NBR 6023:2025 para referências (DOI como endereço completo, https://doi.org/...) e NBR 10520:2023 para citações.
   Uma referência formatada não é automaticamente correta: o app mostra o que falta ou precisa ser
   conferido, e cada dado pode ser marcado como "conferido".
 - **Nada é inventado**: dados ausentes aparecem como pendência (ex.: `[ANO?]`), nunca preenchidos por suposição.
