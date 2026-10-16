@@ -1,6 +1,7 @@
 import type { Autor } from '../../../domain/tipos.ts';
 import type { StatusLeitura } from '../../../data/db.ts';
 import { capitalizarSobrenome } from '../../../domain/abnt/citacao.ts';
+import { entradaDoAutor } from '../../../domain/abnt/nomes.ts';
 
 export const ROTULO_STATUS_LEITURA: Record<StatusLeitura, string> = {
   nao_iniciado: 'Não iniciado',
@@ -20,7 +21,7 @@ export const ORDEM_STATUS: StatusLeitura[] = ['nao_iniciado', 'lendo', 'lido', '
 
 /** "Silva, Souza e Lima" / "Silva et al." para listas. */
 export function autoresCurtos(autores: Autor[] = []): string {
-  const nomes = autores.map((a) => (a.tipo === 'entidade' ? a.sobrenome : capitalizarSobrenome(a.sobrenome)));
+  const nomes = autores.map((a) => (a.tipo === 'entidade' ? a.sobrenome : capitalizarSobrenome(entradaDoAutor(a).sobrenome)));
   if (nomes.length === 0) return '';
   if (nomes.length > 3) return `${nomes[0]} et al.`;
   if (nomes.length === 1) return nomes[0];

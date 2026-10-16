@@ -13,6 +13,7 @@
 import type { Autor, DadosBibliograficos, TipoPublicacao } from './tipos.ts';
 import { levantarPendencias, limparDoi, segmentosParaHtml, type Pendencia, type Referencia, type Segmento } from './abnt/referencia.ts';
 import { capitalizarSobrenome } from './abnt/citacao.ts';
+import { entradaDoAutor } from './abnt/nomes.ts';
 
 export type ChamadaVancouver = 'sobrescrito' | 'parenteses' | 'colchetes';
 
@@ -45,8 +46,9 @@ export function iniciais(prenomes?: string): string {
     .join('');
 }
 
-export function autorVancouver(a: Autor): string {
-  if (a.tipo === 'entidade') return semPontoFinal(limpo(a.sobrenome));
+export function autorVancouver(autor: Autor): string {
+  if (autor.tipo === 'entidade') return semPontoFinal(limpo(autor.sobrenome));
+  const a = entradaDoAutor(autor);
   const ini = iniciais(a.prenomes);
   const sobrenome = capitalizarSobrenome(a.sobrenome);
   return ini ? `${sobrenome} ${ini}` : sobrenome;

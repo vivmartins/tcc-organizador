@@ -284,3 +284,9 @@ test('citação com sobrenome em MAIÚSCULAS (opção da instituição)', () => 
   // padrão: NBR 10520:2023
   assert.equal(gerarCitacao(artigo), '(Silva; Souza, 2021)');
 });
+
+test('partícula no começo do sobrenome vai para o fim do prenome (De Avila → AVILA, ... de)', () => {
+  const r = gerarReferencia({ ...artigo, autores: [P('De Avila', 'Maria Luiza da Rosa'), P('Da Silva', 'Charlene'), P('Müller', 'Juliana dos Santos')] });
+  assert.ok(r.texto.startsWith('AVILA, Maria Luiza da Rosa de; SILVA, Charlene da; MÜLLER, Juliana dos Santos.'), r.texto);
+  assert.equal(gerarCitacao({ ...artigo, autores: [P('De Avila', 'Maria'), P('Da Silva', 'C.')] }), '(Avila; Silva, 2021)');
+});

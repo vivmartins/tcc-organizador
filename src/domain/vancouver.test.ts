@@ -78,3 +78,8 @@ test('lista Vancouver na ordem dos números, sem número no fim', () => {
   assert.equal(l.texto, '1. Beta C. B. SP: X; 2020.\n2. Zeta A. Z. SP: X; 2020.\n[nº?] Alfa B. A. SP: X; 2020.');
   assert.equal(l.semNumero, 1);
 });
+
+test('Vancouver: partícula fora da entrada', () => {
+  const r = gerarReferenciaVancouver({ tipo: 'livro', autores: [P('Da Silva', 'Charlene')], titulo: 'T', localPublicacao: 'SP', editora: 'X', ano: 2020 });
+  assert.equal(r.texto, 'Silva C. T. SP: X; 2020.');
+});

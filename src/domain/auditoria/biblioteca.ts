@@ -3,6 +3,7 @@
 
 import type { Citavel } from './cruzamento.ts';
 import { normalizar } from './texto.ts';
+import { entradaDoAutor } from '../abnt/nomes.ts';
 
 export interface FichaAuditoria {
   id: string;
@@ -32,14 +33,15 @@ export function prepararFonte(
   texto: FonteAuditoria['texto'] | undefined,
   fichas: { id: string; trechoOriginal?: string; pagina?: string }[],
 ): FonteAuditoria {
-  const autores = f.autores.map((a) => normalizar(a.sobrenome)).filter(Boolean);
+  const autores = f.autores.map((a) => normalizar(entradaDoAutor({ tipo: 'pessoa', ...a }).sobrenome)).filter(Boolean);
   const porTitulo = autores.length === 0;
-  const primeiro = f.autores[0]?.sobrenome;
+  const nomes = f.autores.map((a) => entradaDoAutor({ tipo: 'pessoa', ...a }).sobrenome);
+  const primeiro = nomes[0];
   const ano = f.ano ? String(f.ano) : 'sd';
   return {
     id: f.id,
     titulo: f.titulo,
-    rotulo: primeiro ? `${primeiro}${f.autores.length > 2 ? ' et al.' : f.autores.length === 2 ? `; ${f.autores[1].sobrenome}` : ''}, ${f.ano ?? '[s. d.]'}` : f.titulo,
+    rotulo: primeiro ? `${primeiro}${f.autores.length > 2 ? ' et al.' : f.autores.length === 2 ? `; ${nomes[1]}` : ''}, ${f.ano ?? '[s. d.]'}` : f.titulo,
     autores: porTitulo ? [normalizar(f.titulo)] : autores,
     anos: [ano],
     porTitulo,

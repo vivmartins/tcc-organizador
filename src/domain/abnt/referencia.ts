@@ -14,6 +14,7 @@ import type {
   TipoPublicacao,
 } from '../tipos.ts';
 import { ROTULO_CAMPO } from '../tipos.ts';
+import { entradaDoAutor } from './nomes.ts';
 
 export interface Segmento {
   texto: string;
@@ -109,8 +110,9 @@ function entidadeNaReferencia(nome: string): string {
   return `${maiusculas(n.slice(0, i))}${n.slice(i)}`;
 }
 
-function autorNaReferencia(a: Autor): string {
-  if (a.tipo === 'entidade') return entidadeNaReferencia(a.sobrenome);
+function autorNaReferencia(autor: Autor): string {
+  if (autor.tipo === 'entidade') return entidadeNaReferencia(autor.sobrenome);
+  const a = entradaDoAutor(autor);
   const sobrenome = maiusculas(limpo(a.sobrenome));
   return tem(a.prenomes) ? `${sobrenome}, ${limpo(a.prenomes)}` : sobrenome;
 }

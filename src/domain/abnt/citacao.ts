@@ -14,6 +14,7 @@
 
 import type { Autor, DadosBibliograficos } from '../tipos.ts';
 import { formatarPaginas } from './referencia.ts';
+import { entradaDoAutor } from './nomes.ts';
 
 export type EstiloCitacao = 'parentetica' | 'narrativa';
 
@@ -48,7 +49,7 @@ function nomeNaCitacao(a: Autor): string {
     const i = n.indexOf('. ');
     return i === -1 ? n : n.slice(0, i);
   }
-  return capitalizarSobrenome(a.sobrenome);
+  return capitalizarSobrenome(entradaDoAutor(a).sobrenome);
 }
 
 function entradaPorTitulo(titulo: string): string {

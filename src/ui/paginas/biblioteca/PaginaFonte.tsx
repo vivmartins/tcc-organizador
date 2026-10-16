@@ -20,7 +20,7 @@ import { TextoDaFonte } from './TextoDaFonte.tsx';
 
 type Aba = 'dados' | 'resumo' | 'fichamentos' | 'referencia';
 const ABAS: { id: Aba; rotulo: string }[] = [
-  { id: 'referencia', rotulo: 'Referência ABNT' },
+  { id: 'referencia', rotulo: 'Referência' },
   { id: 'dados', rotulo: 'Dados bibliográficos' },
   { id: 'resumo', rotulo: 'Resumo do estudo' },
   { id: 'fichamentos', rotulo: 'Fichamentos' },
@@ -71,7 +71,7 @@ function AbaDados({ fonte, nomesTags }: { fonte: Fonte; nomesTags: Map<string, s
       <p className="flex flex-wrap gap-x-4 gap-y-1 border-t border-borda py-3 text-xs text-cinza-500">
         <span className="inline-flex items-center gap-1"><CheckCircle2 size={13} className="text-sucesso-700" /> conferido</span>
         <span className="inline-flex items-center gap-1"><CircleDashed size={13} /> ainda não conferido</span>
-        <span>Para conferir, use a aba Referência ABNT.</span>
+        <span>Para conferir, use a aba Referência.</span>
       </p>
     </Cartao>
   );
@@ -142,9 +142,12 @@ function ListaPendencias({ titulo, itens, tom, acao }: { titulo: string; itens: 
   );
 }
 
-function AbaReferencia({ fonte, formato }: { fonte: Fonte; formato: FormatoReferencias }) {
+function AbaReferencia({ fonte, formato: doProjeto }: { fonte: Fonte; formato: FormatoReferencias }) {
   const avisar = useAvisos();
-  const vancouver = formato.norma === 'vancouver';
+  // começa na norma do projeto, mas dá para ver na outra sem mudar o projeto
+  const [norma, setNorma] = useState(doProjeto.norma);
+  const formato = useMemo(() => ({ ...doProjeto, norma }), [doProjeto, norma]);
+  const vancouver = norma === 'vancouver';
   const ref = useMemo(() => referenciaDaFonte(fonte, formato), [fonte, formato]);
   const [estilo, setEstilo] = useState<EstiloCitacao>('parentetica');
   const [pagina, setPagina] = useState('');
@@ -172,8 +175,18 @@ function AbaReferencia({ fonte, formato }: { fonte: Fonte; formato: FormatoRefer
   return (
     <div className="flex flex-col gap-4">
       <Cartao className="p-5 sm:p-6">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold">Referência</h2>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <h2 className="text-sm font-semibold">Referência</h2>
+            <div role="tablist" aria-label="Norma da referência" className="flex rounded-md border border-borda bg-fundo p-0.5 text-xs">
+              {(['abnt', 'vancouver'] as const).map((n) => (
+                <button key={n} role="tab" aria-selected={norma === n} onClick={() => setNorma(n)}
+                  className={cx('rounded px-2.5 py-1 font-medium', norma === n ? 'bg-superficie text-acao-700 shadow-sm' : 'text-cinza-600 hover:text-marinho-900')}>
+                  {n === 'abnt' ? 'ABNT' : 'Vancouver'}
+                </button>
+              ))}
+            </div>
+          </div>
           {ref.completa ? (
             conferir.length ? <Selo tom="alerta"><AlertCircle size={12} /> Falta conferir dados</Selo> : <Selo tom="sucesso"><CheckCircle2 size={12} /> Dados conferidos</Selo>
           ) : (
@@ -190,6 +203,7 @@ function AbaReferencia({ fonte, formato }: { fonte: Fonte; formato: FormatoRefer
         </div>
         <p className="mt-3 text-xs text-cinza-500">
           {vancouver ? 'Formatada no estilo Vancouver (ICMJE/NLM), com os termos em português.' : 'Formatada pela NBR 6023:2025.'} Uma referência formatada não é automaticamente correta: confira os dados com a publicação original.
+          {norma !== doProjeto.norma && <> Seu projeto usa {doProjeto.norma === 'vancouver' ? 'Vancouver' : 'ABNT'}; para mudar a norma de todo o projeto, vá em <Link to="/projeto" className="text-acao-700 hover:underline">Dados do projeto</Link>.</>}
         </p>
       </Cartao>
 
