@@ -32,6 +32,11 @@ const cache = new Map<IdiomaOrigem, Promise<Tradutor | null>>();
 /** O navegador tem o tradutor embutido? */
 export const tradutorExiste = () => !!api();
 
+/** Por que a última tentativa de tradução falhou (para explicar à pessoa). */
+export type MotivoSemTraducao = 'sem_api' | 'baixando' | 'indisponivel' | 'erro';
+let motivo: MotivoSemTraducao | null = null;
+export const motivoSemTraducao = () => motivo;
+
 /**
  * Prepara o tradutor. Chame logo no clique do botão (antes de qualquer espera), porque o navegador
  * só baixa o pacote de idioma em resposta a uma ação da pessoa.
@@ -40,14 +45,20 @@ export function prepararTradutor(de: IdiomaOrigem): Promise<Tradutor | null> {
   const existente = cache.get(de);
   if (existente) return existente;
   const T = api();
+  if (!T) motivo = 'sem_api';
   const p: Promise<Tradutor | null> = !T
     ? Promise.resolve(null)
     : (async () => {
         try {
           const opcoes = { sourceLanguage: de, targetLanguage: 'pt' };
-          if ((await comLimite(T.availability(opcoes), LIMITE_TERMO_MS)) === 'unavailable') return null;
-          return await comLimite(T.create(opcoes), LIMITE_PREPARO_MS);
+          const disp = await comLimite(T.availability(opcoes), LIMITE_TERMO_MS);
+          if (disp === 'unavailable') { motivo = 'indisponivel'; return null; }
+          const t = await comLimite(T.create(opcoes), LIMITE_PREPARO_MS);
+          // sem resposta enquanto o pacote de idioma ainda é baixado
+          motivo = t ? null : disp === 'downloadable' || disp === 'downloading' ? 'baixando' : 'erro';
+          return t;
         } catch {
+          motivo = 'erro';
           return null;
         }
       })();

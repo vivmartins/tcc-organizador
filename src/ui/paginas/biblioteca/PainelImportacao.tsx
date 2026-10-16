@@ -4,7 +4,7 @@ import { buscarPorDoi, ErroDeImportacao, type ResultadoImportacao } from '../../
 import { lerPdf } from '../../../integrations/pdf.ts';
 import { extrairDoi } from '../../../domain/duplicatas.ts';
 import type { PalavrasEncontradas } from '../../../domain/palavrasChave.ts';
-import { prepararTradutor, traduzirTermos } from '../../../integrations/traducao.ts';
+import { prepararTradutor, traduzirTermos, motivoSemTraducao } from '../../../integrations/traducao.ts';
 import { Botao, Cartao, Entrada, cx } from '../../componentes/base.tsx';
 
 export type Modo = 'doi' | 'link' | 'pdf';
@@ -63,7 +63,14 @@ export function PainelImportacao({ modoInicial = 'doi', aoImportar, aoReceberAss
       setTraduzindo(false);
     }
     if (naoUsados.length) {
-      acrescentarAviso('As palavras-chave só vieram em inglês e não deu para traduzir neste navegador. Se quiser, digite-as em português.');
+      const motivo = motivoSemTraducao();
+      acrescentarAviso(
+        motivo === 'sem_api'
+          ? 'As palavras-chave só vieram em inglês, e este navegador não tem o tradutor embutido (ele existe no Chrome e no Edge do computador, em versões recentes; no celular ainda não). Se quiser, digite-as em português.'
+          : motivo === 'baixando'
+            ? 'As palavras-chave só vieram em inglês, e o navegador ainda está baixando o pacote de tradução (só na primeira vez). Tente buscar de novo daqui a alguns minutos, ou digite-as em português.'
+            : 'As palavras-chave só vieram em inglês, e o tradutor do navegador não respondeu agora. Tente de novo mais tarde, ou digite-as em português.',
+      );
     }
   }
 
