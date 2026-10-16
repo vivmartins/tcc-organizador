@@ -361,7 +361,7 @@ export function FormularioFonte() {
       const r = await buscarPorDoi(e.doi);
       const [palavras, temas] = await Promise.all([traduzirTermos(r.palavrasChave, 'en'), traduzirTermos(r.temas, 'en')]);
       if ((palavras === null && r.palavrasChave.length) || (temas === null && r.temas.length)) {
-        avisar('erro', 'O OpenAlex só informa esses termos em inglês, e a tradução automática não está disponível neste navegador (use o Chrome ou o Edge atualizados, no computador).');
+        avisar('erro', 'Esses termos só existem em inglês e não deu para traduzir neste navegador. Se quiser, digite-os em português.');
         return;
       }
       r.palavrasChave = palavras ?? [];

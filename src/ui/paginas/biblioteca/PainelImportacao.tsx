@@ -63,7 +63,7 @@ export function PainelImportacao({ modoInicial = 'doi', aoImportar, aoReceberAss
       setTraduzindo(false);
     }
     if (naoUsados.length) {
-      acrescentarAviso(`Não usamos ${naoUsados.join(' nem ')} porque a tradução automática não está disponível ou não respondeu neste navegador (use o Chrome ou o Edge atualizados, no computador, com internet na primeira vez). Você pode digitá-las em português.`);
+      acrescentarAviso('As palavras-chave só vieram em inglês e não deu para traduzir neste navegador. Se quiser, digite-as em português.');
     }
   }
 
