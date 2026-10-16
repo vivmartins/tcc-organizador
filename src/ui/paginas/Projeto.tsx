@@ -16,6 +16,8 @@ function FormularioProjeto({ inicial, textoBotao, aoSalvar }: { inicial?: Projet
     prazoFinal: inicial?.prazoFinal ?? '',
     etAlNasReferencias: inicial?.etAlNasReferencias ?? false,
     citacaoMaiusculas: inicial?.citacaoMaiusculas ?? false,
+    normaReferencias: inicial?.normaReferencias ?? 'abnt',
+    chamadaVancouver: inicial?.chamadaVancouver ?? 'sobrescrito',
   });
   const [erro, setErro] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
@@ -58,6 +60,29 @@ function FormularioProjeto({ inicial, textoBotao, aoSalvar }: { inicial?: Projet
           <Entrada id="prazo" type="date" value={d.prazoFinal} onChange={mudar('prazoFinal')} aria-invalid={!!erroPrazo} />
         </Campo>
       </div>
+      <fieldset className="flex flex-col gap-2 text-sm text-marinho-700">
+        <legend className="mb-1 font-medium text-marinho-900">Norma das referências e citações</legend>
+        <label className="flex items-start gap-2.5">
+          <input type="radio" name="norma" className="mt-0.5 size-4 accent-acao-600" checked={d.normaReferencias !== 'vancouver'} onChange={() => setD({ ...d, normaReferencias: 'abnt' })} />
+          <span>ABNT <span className="text-cinza-500">— autor e ano no texto, lista em ordem alfabética (NBR 6023 e NBR 10520)</span></span>
+        </label>
+        <label className="flex items-start gap-2.5">
+          <input type="radio" name="norma" className="mt-0.5 size-4 accent-acao-600" checked={d.normaReferencias === 'vancouver'} onChange={() => setD({ ...d, normaReferencias: 'vancouver' })} />
+          <span>Vancouver <span className="text-cinza-500">— número no texto, lista na ordem de citação (comum na área da saúde)</span></span>
+        </label>
+      </fieldset>
+      {d.normaReferencias === 'vancouver' ? (
+        <fieldset className="flex flex-col gap-2 text-sm text-marinho-700">
+          <legend className="mb-1 font-medium text-marinho-900">Como o número aparece no texto</legend>
+          {([['sobrescrito', 'Sobrescrito', '…menos de dois milímetros¹'], ['parenteses', 'Entre parênteses', '…menos de dois milímetros (1)'], ['colchetes', 'Entre colchetes', '…menos de dois milímetros [1]']] as const).map(([v, rotulo, ex]) => (
+            <label key={v} className="flex items-start gap-2.5">
+              <input type="radio" name="chamada" className="mt-0.5 size-4 accent-acao-600" checked={(d.chamadaVancouver ?? 'sobrescrito') === v} onChange={() => setD({ ...d, chamadaVancouver: v })} />
+              <span>{rotulo} <span className="text-cinza-500">— {ex}</span></span>
+            </label>
+          ))}
+        </fieldset>
+      ) : (
+        <>
       <label className="flex items-start gap-2.5 text-sm text-marinho-700">
         <input type="checkbox" className="mt-0.5 size-4 accent-acao-600" checked={!!d.etAlNasReferencias} onChange={(e) => setD({ ...d, etAlNasReferencias: e.target.checked })} />
         <span>
@@ -77,6 +102,8 @@ function FormularioProjeto({ inicial, textoBotao, aoSalvar }: { inicial?: Projet
         </label>
         <span className="text-xs text-cinza-500">Vale para as citações que a plataforma monta. Na forma narrativa fica sempre só a inicial maiúscula: “Segundo Silva (2021)”.</span>
       </fieldset>
+        </>
+      )}
       {erro && !erroNome && !erroPrazo && <p role="alert" className="text-sm text-perigo-700">{erro}</p>}
       <div>
         <Botao type="submit" variante="primario" disabled={salvando}>{textoBotao}</Botao>

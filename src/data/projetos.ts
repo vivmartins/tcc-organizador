@@ -1,6 +1,6 @@
 import { db, novoId, agora, TABELAS_DO_PROJETO, type Projeto } from './db.ts';
 
-export type DadosProjeto = Pick<Projeto, 'nome' | 'tema' | 'objetivoGeral' | 'dataInicio' | 'prazoFinal' | 'etAlNasReferencias' | 'citacaoMaiusculas'>;
+export type DadosProjeto = Pick<Projeto, 'nome' | 'tema' | 'objetivoGeral' | 'dataInicio' | 'prazoFinal' | 'etAlNasReferencias' | 'citacaoMaiusculas' | 'normaReferencias' | 'chamadaVancouver'>;
 
 const CHAVE_ATIVO = 'projetoAtivoId';
 

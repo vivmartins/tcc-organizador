@@ -29,7 +29,8 @@ const TITULO_REFERENCIAS = /^(\d+(\.\d+)*\.?\s+)?(referencias|referencias biblio
 const FIM_DAS_REFERENCIAS = /^(\d+(\.\d+)*\.?\s+)?(apendice|apendices|anexo|anexos|glossario|indice)\b/;
 
 /** Uma referência ABNT começa com SOBRENOME, ENTIDADE ou TÍTULO em maiúsculas. */
-const pareceInicioDeReferencia = (t: string) => /^(?:\p{Lu}{1,3}\s+)?\p{Lu}[\p{Lu}'’\-]+([ ,.;:]|$)/u.test(t.trim());
+// Entrada da ABNT (SOBRENOME, ...) ou entrada numerada do Vancouver (1. Silva MA, ... / [1] ...)
+const pareceInicioDeReferencia = (t: string) => /^(?:\p{Lu}{1,3}\s+)?\p{Lu}[\p{Lu}'’\-]+([ ,.;:]|$)/u.test(t.trim()) || /^\[?\d{1,3}[.)\]]\s/.test(t.trim());
 
 /** Separa o texto (corpo) da lista de referências. Usa o ÚLTIMO título "Referências" (o primeiro costuma estar no sumário). */
 export function separarDocumento(doc: DocumentoTcc): DocumentoSeparado {

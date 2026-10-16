@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { NotebookPen, Plus, Search, Library } from 'lucide-react';
 import { db, type Fichamento } from '../../../data/db.ts';
 import { useProjetoObrigatorio } from '../../projetoAtivo.tsx';
+import { formatoDoProjeto } from '../../../domain/formato.ts';
 import { Botao, BotaoLink, CabecalhoPagina, Cartao, Entrada, EstadoVazio, Selecao } from '../../componentes/base.tsx';
 import { corresponde, termosDaConsulta } from '../../../domain/busca.ts';
 import { ORDEM_TIPOS_FICHAMENTO, ROTULO_TIPO_FICHAMENTO, type TipoFichamento } from '../../../domain/fichamento.ts';
@@ -114,7 +115,7 @@ export function ListaDeFichas({ fonteId }: { fonteId?: string }) {
           ) : (
             <div className="flex flex-col gap-3">
               {filtradas.map((f) => (
-                <CartaoFicha key={f.id} ficha={f} fonte={fontesPorId.get(f.fonteId)} nomesTags={nomesTags} mostrarFonte={!fonteId} etAl={projeto.etAlNasReferencias} maiusculas={projeto.citacaoMaiusculas} aoEditar={() => setEditando(f)} />
+                <CartaoFicha key={f.id} ficha={f} fonte={fontesPorId.get(f.fonteId)} nomesTags={nomesTags} mostrarFonte={!fonteId} formato={formatoDoProjeto(projeto)} aoEditar={() => setEditando(f)} />
               ))}
             </div>
           )}

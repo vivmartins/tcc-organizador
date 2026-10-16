@@ -65,6 +65,16 @@ function textoDoParagrafo(p: Element): string {
         case 'br': case 'cr': t += ' '; break;
         case 'noBreakHyphen': t += '-'; break;
         case 'del': case 'delText': case 'instrText': case 'pPr': case 'rPr': break; // revisões apagadas e códigos de campo
+        case 'r': {
+          // número sobrescrito (chamada do Vancouver): vira ¹²³ no texto, para a auditoria reconhecer
+          const antes = t;
+          visitar(c);
+          if (attr(filho(filho(c, 'rPr'), 'vertAlign'), 'val') === 'superscript') {
+            const novo = t.slice(antes.length);
+            if (/^[\d,\s\-–]+$/.test(novo)) t = antes + novo.replace(/\d/g, (d) => '⁰¹²³⁴⁵⁶⁷⁸⁹'[Number(d)]).replace(/[-–]/g, '⁻').replace(/\s+/g, '');
+          }
+          break;
+        }
         default: visitar(c);
       }
     }

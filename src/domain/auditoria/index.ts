@@ -8,6 +8,7 @@ import { verificarDiretas, type VerificacaoDireta } from './diretas.ts';
 import { checarCopia, type ResultadoCopia } from './copia.ts';
 import type { FonteAuditoria } from './biblioteca.ts';
 import type { ParagrafoCorpo } from './documento.ts';
+import { auditarVancouver, lerReferenciasVancouver, type ChamadaNumerica, type ResultadoVancouver } from './vancouver.ts';
 
 export interface ResultadoAuditoria {
   nomeArquivo: string;
@@ -20,12 +21,25 @@ export interface ResultadoAuditoria {
   copia: ResultadoCopia;
   /** fontes da biblioteca sem texto guardado e sem fichas com trecho original */
   fontesSemMaterial: FonteAuditoria[];
+  /** só no estilo Vancouver */
+  vancouver?: ResultadoVancouver;
 }
 
-export function auditar(doc: DocumentoTcc, fontes: FonteAuditoria[]): ResultadoAuditoria {
+export interface OpcoesAuditoria {
+  norma?: 'abnt' | 'vancouver';
+  chamada?: ChamadaNumerica;
+}
+
+export function auditar(doc: DocumentoTcc, fontes: FonteAuditoria[], opcoes: OpcoesAuditoria = {}): ResultadoAuditoria {
   const sep = separarDocumento(doc);
-  const refs = lerReferencias(sep.referencias);
-  const citacoes = encontrarCitacoes(sep.corpo);
+  let refs, citacoes, vancouver: ResultadoVancouver | undefined;
+  if (opcoes.norma === 'vancouver') {
+    refs = lerReferenciasVancouver(sep.referencias);
+    ({ citacoes, vancouver } = auditarVancouver(sep.corpo, refs, fontes, opcoes.chamada ?? 'sobrescrito'));
+  } else {
+    refs = lerReferencias(sep.referencias);
+    citacoes = encontrarCitacoes(sep.corpo);
+  }
   const diretas = encontrarCitacoesDiretas(sep.corpo, citacoes);
   return {
     nomeArquivo: doc.nomeArquivo,
@@ -37,6 +51,7 @@ export function auditar(doc: DocumentoTcc, fontes: FonteAuditoria[]): ResultadoA
     diretas: verificarDiretas(diretas, fontes),
     copia: checarCopia(sep.corpo, citacoes, diretas, fontes),
     fontesSemMaterial: fontes.filter((f) => !f.texto && f.fichas.length === 0),
+    vancouver,
   };
 }
 

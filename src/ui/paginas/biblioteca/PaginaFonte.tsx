@@ -3,9 +3,11 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ArrowLeft, Pencil, Trash2, Copy, CheckCircle2, AlertCircle, CircleDashed, ExternalLink, Check } from 'lucide-react';
 import { db, type Fonte, type ResumoEstudo, type StatusLeitura } from '../../../data/db.ts';
-import { atualizarResumo, atualizarStatusLeitura, excluirFonte, marcarCampos } from '../../../data/fontes.ts';
-import { gerarReferencia, limparDoi, type Pendencia } from '../../../domain/abnt/referencia.ts';
-import { gerarCitacao, type EstiloCitacao } from '../../../domain/abnt/citacao.ts';
+import { atualizarResumo, atualizarStatusLeitura, definirNumeroVancouver, excluirFonte, marcarCampos } from '../../../data/fontes.ts';
+import { limparDoi, type Pendencia } from '../../../domain/abnt/referencia.ts';
+import { type EstiloCitacao } from '../../../domain/abnt/citacao.ts';
+import { citacaoDaFonte, formatoDoProjeto, referenciaDaFonte, type FormatoReferencias } from '../../../domain/formato.ts';
+import { compactarNumeros } from '../../../domain/vancouver.ts';
 import { ROTULO_TIPO, ROTULO_CAMPO, type CampoBibliografico } from '../../../domain/tipos.ts';
 import { useProjetoObrigatorio } from '../../projetoAtivo.tsx';
 import { AreaTexto, Botao, BotaoLink, Cartao, Campo, Entrada, Selecao, Selo, cx } from '../../componentes/base.tsx';
@@ -140,12 +142,18 @@ function ListaPendencias({ titulo, itens, tom, acao }: { titulo: string; itens: 
   );
 }
 
-function AbaReferencia({ fonte, etAl, maiusculas }: { fonte: Fonte; etAl?: boolean; maiusculas?: boolean }) {
+function AbaReferencia({ fonte, formato }: { fonte: Fonte; formato: FormatoReferencias }) {
   const avisar = useAvisos();
-  const ref = useMemo(() => gerarReferencia(fonte, { etAlAPartirDe4: etAl }), [fonte, etAl]);
+  const vancouver = formato.norma === 'vancouver';
+  const ref = useMemo(() => referenciaDaFonte(fonte, formato), [fonte, formato]);
   const [estilo, setEstilo] = useState<EstiloCitacao>('parentetica');
   const [pagina, setPagina] = useState('');
-  const citacao = gerarCitacao(fonte, { estilo, pagina, maiusculas });
+  const citacao = citacaoDaFonte(fonte, formato, { estilo, pagina });
+  // no Word, o número sobrescrito precisa ir como <sup> para continuar sobrescrito ao colar
+  const citacaoHtml = vancouver && formato.chamada === 'sobrescrito' && fonte.numeroVancouver
+    ? `<sup>${compactarNumeros([fonte.numeroVancouver])}</sup>${pagina.trim() ? citacao.replace(/^\S+/, '') : ''}`
+    : undefined;
+  const [numero, setNumero] = useState(fonte.numeroVancouver ? String(fonte.numeroVancouver) : '');
 
   const obrig = ref.pendencias.filter((p) => p.nivel === 'obrigatorio');
   const recom = ref.pendencias.filter((p) => p.nivel === 'recomendado');
@@ -172,13 +180,16 @@ function AbaReferencia({ fonte, etAl, maiusculas }: { fonte: Fonte; etAl?: boole
             <Selo tom="perigo"><AlertCircle size={12} /> Dados obrigatórios faltando</Selo>
           )}
         </div>
-        <p className="rounded-md bg-fundo px-4 py-3 font-serif text-[15px] leading-relaxed text-marinho-900" dangerouslySetInnerHTML={{ __html: ref.html }} />
+        <p className="rounded-md bg-fundo px-4 py-3 font-serif text-[15px] leading-relaxed text-marinho-900">
+          {vancouver && <span className="mr-1">{fonte.numeroVancouver ? `${fonte.numeroVancouver}.` : '[nº?]'}</span>}
+          <span dangerouslySetInnerHTML={{ __html: ref.html }} />
+        </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Botao variante="primario" onClick={() => copiarComAviso(ref.texto, ref.html, 'Referência')}><Copy size={15} /> Copiar referência</Botao>
           <BotaoLink para={`/biblioteca/${fonte.id}/editar`}><Pencil size={14} /> Corrigir dados</BotaoLink>
         </div>
         <p className="mt-3 text-xs text-cinza-500">
-          Formatada pela NBR 6023:2025. Uma referência formatada não é automaticamente correta: confira os dados com a publicação original.
+          {vancouver ? 'Formatada no estilo Vancouver (ICMJE/NLM), com os termos em português.' : 'Formatada pela NBR 6023:2025.'} Uma referência formatada não é automaticamente correta: confira os dados com a publicação original.
         </p>
       </Cartao>
 
@@ -208,6 +219,26 @@ function AbaReferencia({ fonte, etAl, maiusculas }: { fonte: Fonte; etAl?: boole
         </Cartao>
       )}
 
+      {vancouver ? (
+      <Cartao className="p-5 sm:p-6">
+        <h2 className="text-sm font-semibold">Citação no texto</h2>
+        <p className="mt-0.5 text-xs text-cinza-500">Vancouver: cada obra recebe um número, na ordem em que aparece pela primeira vez no TCC, e a citação é esse número.</p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-[180px_160px]">
+          <Campo rotulo="Número na lista" id="numeroVancouver" dica="A auditoria pode numerar pela ordem do seu TCC.">
+            <Entrada id="numeroVancouver" type="number" min={1} value={numero} onChange={(e) => setNumero(e.target.value)}
+              onBlur={async () => { const n = Number(numero); await definirNumeroVancouver(fonte.id, numero.trim() ? n : undefined); }} placeholder="Ex.: 3" />
+          </Campo>
+          <Campo rotulo="Página" id="pagina" dica="Se a instituição pedir na citação direta.">
+            <Entrada id="pagina" value={pagina} onChange={(e) => setPagina(e.target.value)} placeholder="Ex.: 15" />
+          </Campo>
+        </div>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <code className="rounded-md bg-fundo px-3 py-2 font-serif text-[15px] text-marinho-900">{citacao}</code>
+          <Botao tamanho="p" onClick={() => copiarComAviso(citacao, citacaoHtml, 'Citação')}><Copy size={14} /> Copiar</Botao>
+        </div>
+        {!fonte.numeroVancouver && <p className="mt-3 text-xs text-cinza-500">Esta fonte ainda não tem número. Informe acima ou use “Numerar a biblioteca” na Auditoria do TCC.</p>}
+      </Cartao>
+      ) : (
       <Cartao className="p-5 sm:p-6">
         <h2 className="text-sm font-semibold">Citação no texto</h2>
         <p className="mt-0.5 text-xs text-cinza-500">Sistema autor-data, NBR 10520:2023.</p>
@@ -227,6 +258,7 @@ function AbaReferencia({ fonte, etAl, maiusculas }: { fonte: Fonte; etAl?: boole
           <Botao tamanho="p" onClick={() => copiarComAviso(citacao, undefined, 'Citação')}><Copy size={14} /> Copiar</Botao>
         </div>
       </Cartao>
+      )}
     </div>
   );
 }
@@ -295,7 +327,7 @@ export function PaginaFonte() {
       </div>
 
       <div role="tabpanel">
-        {aba === 'referencia' && <AbaReferencia fonte={fonte} etAl={projeto.etAlNasReferencias} maiusculas={projeto.citacaoMaiusculas} />}
+        {aba === 'referencia' && <AbaReferencia key={fonte.id} fonte={fonte} formato={formatoDoProjeto(projeto)} />}
         {aba === 'dados' && (
           <div className="flex flex-col gap-4">
             <AbaDados fonte={fonte} nomesTags={nomesTags} />

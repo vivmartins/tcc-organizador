@@ -4,7 +4,7 @@ import { Copy, Pencil, Trash2 } from 'lucide-react';
 import type { Fichamento, Fonte } from '../../../data/db.ts';
 import { excluirFicha } from '../../../data/fichamentos.ts';
 import { ROTULO_TIPO_FICHAMENTO, textoDaFicha, type TipoFichamento } from '../../../domain/fichamento.ts';
-import { gerarCitacao } from '../../../domain/abnt/citacao.ts';
+import { citacaoDaFonte, type FormatoReferencias } from '../../../domain/formato.ts';
 import { Selo } from '../../componentes/base.tsx';
 import { Confirmacao, useAvisos } from '../../componentes/dialogos.tsx';
 import { copiar, dataCurta } from '../../util.ts';
@@ -26,14 +26,14 @@ function BotaoIcone({ rotulo, onClick, perigo, children }: { rotulo: string; onC
   );
 }
 
-export function CartaoFicha({ ficha, fonte, nomesTags, mostrarFonte, etAl, maiusculas, aoEditar }: { ficha: Fichamento; fonte?: Fonte; nomesTags: Map<string, string>; mostrarFonte?: boolean; etAl?: boolean; maiusculas?: boolean; aoEditar: () => void }) {
+export function CartaoFicha({ ficha, fonte, nomesTags, mostrarFonte, formato, aoEditar }: { ficha: Fichamento; fonte?: Fonte; nomesTags: Map<string, string>; mostrarFonte?: boolean; formato: FormatoReferencias; aoEditar: () => void }) {
   const avisar = useAvisos();
   const [excluindo, setExcluindo] = useState(false);
 
   async function copiarFicha() {
     if (!fonte) return;
     try {
-      await copiar(textoDaFicha(ficha, fonte, { etAlAPartirDe4: etAl, citacaoMaiusculas: maiusculas }));
+      await copiar(textoDaFicha(ficha, fonte, formato));
       avisar('sucesso', 'Ficha completa copiada, com a identificação da fonte.');
     } catch {
       avisar('erro', 'Não foi possível copiar. Verifique a permissão de área de transferência do navegador.');
@@ -58,7 +58,7 @@ export function CartaoFicha({ ficha, fonte, nomesTags, mostrarFonte, etAl, maius
       {ficha.trechoOriginal && (
         <blockquote className="mt-3 whitespace-pre-wrap border-l-2 border-acao-100 pl-3 font-serif text-[15px] leading-relaxed text-marinho-900">
           “{ficha.trechoOriginal}”
-          {fonte && <span className="whitespace-nowrap font-sans text-xs text-cinza-500"> {gerarCitacao(fonte, { pagina: ficha.pagina, maiusculas })}</span>}
+          {fonte && <span className="whitespace-nowrap font-sans text-xs text-cinza-500"> {citacaoDaFonte(fonte, formato, { pagina: ficha.pagina })}</span>}
         </blockquote>
       )}
       {ficha.parafrase && (

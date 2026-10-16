@@ -2,8 +2,7 @@
 // O trecho original é SEMPRE preservado exatamente como foi digitado.
 
 import type { DadosBibliograficos } from './tipos.ts';
-import { gerarCitacao } from './abnt/citacao.ts';
-import { gerarReferencia } from './abnt/referencia.ts';
+import { citacaoDaFonte, referenciaDaFonte, type FormatoReferencias } from './formato.ts';
 
 export type TipoFichamento = 'citacao_direta' | 'citacao_indireta' | 'resumo' | 'ideia' | 'dado_relevante';
 
@@ -44,13 +43,13 @@ export function validarFicha(f: ConteudoFicha): Record<string, string> {
 }
 
 /** Texto da ficha completa: conteúdo + identificação da fonte (citação e referência). */
-export function textoDaFicha(f: ConteudoFicha, fonte: DadosBibliograficos, opcoes: { etAlAPartirDe4?: boolean; citacaoMaiusculas?: boolean } = {}): string {
+export function textoDaFicha(f: ConteudoFicha, fonte: DadosBibliograficos & { numeroVancouver?: number }, fmt: FormatoReferencias = { norma: 'abnt' }): string {
   const partes: string[] = [`[${ROTULO_TIPO_FICHAMENTO[f.tipo]}]${tem(f.tema) ? ` Tema: ${f.tema!.trim()}` : ''}`];
-  const citacao = gerarCitacao(fonte, { pagina: f.pagina, maiusculas: opcoes.citacaoMaiusculas });
+  const citacao = citacaoDaFonte(fonte, fmt, { pagina: f.pagina });
   if (tem(f.trechoOriginal)) partes.push(`“${f.trechoOriginal}” ${citacao}`);
   if (tem(f.parafrase)) partes.push(`Resumo/paráfrase: ${f.parafrase!.trim()}${tem(f.trechoOriginal) ? '' : ` ${citacao}`}`);
   if (tem(f.interpretacao)) partes.push(`Minha interpretação: ${f.interpretacao!.trim()}`);
   if (tem(f.capituloSecao)) partes.push(`Uso no TCC: ${f.capituloSecao!.trim()}`);
-  partes.push(`Fonte: ${gerarReferencia(fonte, opcoes).texto}`);
+  partes.push(`Fonte: ${referenciaDaFonte(fonte, fmt).texto}`);
   return partes.join('\n\n');
 }

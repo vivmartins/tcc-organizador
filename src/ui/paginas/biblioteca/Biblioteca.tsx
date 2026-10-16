@@ -8,7 +8,7 @@ import { useProjetoObrigatorio } from '../../projetoAtivo.tsx';
 import { Botao, BotaoLink, CabecalhoPagina, Cartao, EstadoVazio, Entrada, Selecao, Selo, cx } from '../../componentes/base.tsx';
 import { useAvisos } from '../../componentes/dialogos.tsx';
 import { corresponde, termosDaConsulta } from '../../../domain/busca.ts';
-import { gerarListaDeReferencias, gerarReferencia } from '../../../domain/abnt/referencia.ts';
+import { formatoDoProjeto, listaDeReferencias, referenciaDaFonte } from '../../../domain/formato.ts';
 import { ROTULO_TIPO } from '../../../domain/tipos.ts';
 import { copiar, plural } from '../../util.ts';
 import { ROTULO_STATUS_LEITURA, TOM_STATUS_LEITURA, ORDEM_STATUS, autoresCurtos } from './rotulos.ts';
@@ -100,11 +100,14 @@ export function Biblioteca() {
   }
 
   async function copiarReferencias(fontes: Fonte[]) {
-    const lista = gerarListaDeReferencias(fontes, { etAlAPartirDe4: projeto.etAlNasReferencias });
+    const fmt = formatoDoProjeto(projeto);
+    const lista = listaDeReferencias(fontes, fmt);
     try {
       await copiar(lista.texto, lista.html);
-      const incompletas = lista.referencias.filter((r) => !r.completa).length;
-      avisar('sucesso', `${plural(fontes.length, 'referência copiada', 'referências copiadas')} em ordem alfabética.${incompletas ? ` Atenção: ${incompletas} com dados faltando.` : ''}`);
+      const incompletas = fontes.filter((f) => !referenciaDaFonte(f, fmt).completa).length;
+      const ordem = fmt.norma === 'vancouver' ? 'na ordem dos números' : 'em ordem alfabética';
+      const semNumero = lista.semNumero ? ` ${plural(lista.semNumero, 'fonte ainda sem número', 'fontes ainda sem número')} (marcadas com [nº?]).` : '';
+      avisar('sucesso', `${plural(fontes.length, 'referência copiada', 'referências copiadas')} ${ordem}.${incompletas ? ` Atenção: ${incompletas} com dados faltando.` : ''}${semNumero}`);
     } catch {
       avisar('erro', 'Não foi possível copiar. Verifique a permissão de área de transferência do navegador.');
     }
@@ -136,7 +139,7 @@ export function Biblioteca() {
         <>
           {modoReferencias && (
             <div className="mb-4 flex items-start justify-between gap-3 rounded-lg border border-acao-100 bg-acao-50 px-4 py-3 text-sm text-acao-700">
-              <span>Marque as fontes que deseja e clique em <strong>Copiar referências</strong>. Elas serão copiadas em ordem alfabética, prontas para colar no seu documento.</span>
+              <span>Marque as fontes que deseja e clique em <strong>Copiar referências</strong>. Elas serão copiadas {projeto.normaReferencias === 'vancouver' ? 'na ordem dos números (Vancouver)' : 'em ordem alfabética'}, prontas para colar no seu documento.</span>
               <button onClick={() => setParams({})} aria-label="Fechar dica" className="shrink-0 rounded p-0.5 hover:bg-acao-100"><X size={16} /></button>
             </div>
           )}
@@ -200,12 +203,15 @@ export function Biblioteca() {
             ) : (
               <ul className="divide-y divide-borda">
                 {filtradas.map((f) => {
-                  const completa = gerarReferencia(f).completa;
+                  const completa = referenciaDaFonte(f, formatoDoProjeto(projeto)).completa;
                   return (
                     <li key={f.id} className={cx('flex items-start gap-3 px-4 py-3.5 transition-colors hover:bg-fundo', selecionadas.has(f.id) && 'bg-acao-50/50')}>
                       <input type="checkbox" aria-label={`Selecionar ${f.titulo}`} className="mt-1 size-4 shrink-0 accent-acao-600" checked={selecionadas.has(f.id)} onChange={() => alternar(f.id)} />
                       <Link to={`/biblioteca/${f.id}`} className="min-w-0 flex-1">
                         <span className="block text-[15px] font-medium leading-snug text-marinho-900">
+                          {projeto.normaReferencias === 'vancouver' && (
+                            <span className="mr-1.5 inline-flex min-w-6 justify-center rounded bg-acao-50 px-1 text-xs font-semibold text-acao-700" title="Número na lista de referências (Vancouver)">{f.numeroVancouver ?? 'nº?'}</span>
+                          )}
                           {f.titulo}{f.subtitulo && <span className="font-normal text-marinho-700">: {f.subtitulo}</span>}
                         </span>
                         <span className="mt-0.5 block text-[13px] text-cinza-600">

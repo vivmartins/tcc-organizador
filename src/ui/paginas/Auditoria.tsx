@@ -4,6 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { FileSearch, Upload, Loader2, RefreshCw, ShieldCheck, Info, FileText, ChevronRight } from 'lucide-react';
 import { db } from '../../data/db.ts';
 import { carregarFontesParaAuditoria } from '../../data/auditoria.ts';
+import { numerarFontes } from '../../data/fontes.ts';
 import { lerDocumentoTcc } from '../../integrations/documentoTcc.ts';
 import { auditar, type DocumentoTcc, type ResultadoAuditoria } from '../../domain/auditoria/index.ts';
 import type { PedacoDiferenca } from '../../domain/auditoria/comparar.ts';
@@ -37,7 +38,7 @@ export function Auditoria() {
   );
 
   async function rodar(doc: DocumentoTcc) {
-    const resultado = auditar(doc, await carregarFontesParaAuditoria(projeto.id));
+    const resultado = auditar(doc, await carregarFontesParaAuditoria(projeto.id), { norma: projeto.normaReferencias, chamada: projeto.chamadaVancouver });
     memoria = { projetoId: projeto.id, doc, resultado };
     setEstado(memoria);
   }
@@ -134,7 +135,7 @@ export function Auditoria() {
             ))}
           </div>
           <div role="tabpanel">
-            {aba === 'citacoes' && <AbaCitacoes r={r} maiusculas={!!projeto.citacaoMaiusculas} />}
+            {aba === 'citacoes' && <AbaCitacoes r={r} maiusculas={!!projeto.citacaoMaiusculas} projetoId={projeto.id} />}
             {aba === 'diretas' && <AbaDiretas r={r} />}
             {aba === 'copia' && <AbaCopia r={r} />}
           </div>
@@ -145,6 +146,7 @@ export function Auditoria() {
 }
 
 const contarCitacoes = (r: ResultadoAuditoria) =>
+  (r.vancouver ? r.vancouver.semReferencia.length + r.vancouver.foraDeOrdem.length : 0) +
   r.citacoes.problemas.length + r.citacoes.naoCitadas.length + r.citacoes.semPagina.length + r.citacoes.semAutoria.length + r.citacoes.longasSemRecuo.length;
 
 // ---------------------------------------------------------------------
@@ -188,7 +190,8 @@ function TudoCerto({ children }: { children: ReactNode }) {
 // Aba 1: citações × referências
 // ---------------------------------------------------------------------
 
-function AbaCitacoes({ r, maiusculas }: { r: ResultadoAuditoria; maiusculas: boolean }) {
+function AbaCitacoes({ r, maiusculas, projetoId }: { r: ResultadoAuditoria; maiusculas: boolean; projetoId: string }) {
+  const v = r.vancouver;
   const c = r.citacoes;
   const texto = (pi: number) => r.corpo[pi]?.texto ?? '';
   const sem = c.problemas.filter((p) => p.tipo === 'sem_referencia');
@@ -205,6 +208,7 @@ function AbaCitacoes({ r, maiusculas }: { r: ResultadoAuditoria; maiusculas: boo
         </p>
       )}
       {contarCitacoes(r) === 0 && !misturado && r.achouReferencias && <TudoCerto>Todas as citações encontradas têm referência, e todas as referências foram citadas.</TudoCerto>}
+      {v && <GruposVancouver r={r} projetoId={projetoId} />}
 
       <Grupo titulo="Citado no texto, mas sem referência" n={sem.length} tom="perigo"
         explicacao="Toda obra citada precisa estar na lista de referências. Pode ser que falte a referência ou que o nome esteja escrito de outro jeito no texto e na lista.">
@@ -228,17 +232,17 @@ function AbaCitacoes({ r, maiusculas }: { r: ResultadoAuditoria; maiusculas: boo
       </Grupo>
 
       <Grupo titulo="Nas referências, mas não citado no texto" n={c.naoCitadas.length}
-        explicacao="Pela NBR 6023, a lista de referências deve ter só as obras citadas no trabalho. Se você usou a obra, inclua a citação; se não, retire a referência.">
+        explicacao="A lista de referências deve ter só as obras citadas no trabalho. Se você usou a obra, inclua a citação; se não, retire a referência.">
         {c.naoCitadas.map((ref) => <li key={ref.indice} className="rounded-md bg-fundo p-3 text-sm">{ref.texto}</li>)}
       </Grupo>
 
-      <Grupo titulo="Citação direta sem página" n={c.semPagina.length}
-        explicacao="Na citação direta (cópia exata do texto), a NBR 10520 pede a página, por exemplo: (Silva, 2020, p. 15).">
+      <Grupo titulo="Citação direta sem página" n={c.semPagina.length} tom={v ? 'neutro' : 'alerta'}
+        explicacao={v ? 'No Vancouver, a página na citação direta depende da instituição. Se a sua pedir, indique junto ao número, por exemplo: (1, p. 15).' : 'Na citação direta (cópia exata do texto), a NBR 10520 pede a página, por exemplo: (Silva, 2020, p. 15).'}>
         {c.semPagina.map((d, i) => <li key={i} className="rounded-md bg-fundo p-3"><Trecho texto={texto(d.paragrafo)} inicio={d.inicio} fim={d.citacao ? Math.max(d.fim, d.citacao.paragrafo === d.paragrafo ? d.citacao.fim : d.fim) : d.fim} margem={30} /></li>)}
       </Grupo>
 
       <Grupo titulo="Trecho entre aspas ou recuado sem citação" n={c.semAutoria.length}
-        explicacao="Encontramos um trecho entre aspas (ou recuado, como citação longa) sem autor e ano perto dele. Se for uma citação, indique a autoria.">
+        explicacao={v ? 'Encontramos um trecho entre aspas (ou recuado, como citação longa) sem número de citação logo depois. Se for uma citação, indique o número da obra.' : 'Encontramos um trecho entre aspas (ou recuado, como citação longa) sem autor e ano perto dele. Se for uma citação, indique a autoria.'}>
         {c.semAutoria.map((d, i) => <li key={i} className="rounded-md bg-fundo p-3"><Trecho texto={texto(d.paragrafo)} inicio={d.inicio} fim={d.fim} margem={30} /></li>)}
       </Grupo>
 
@@ -396,5 +400,62 @@ function AbaCopia({ r }: { r: ResultadoAuditoria }) {
         {por('parafrase').map((t, i) => <ParLado key={i} t={t} />)}
       </Grupo>
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------
+// Vancouver: números sem referência, ordem de citação e numeração da biblioteca
+// ---------------------------------------------------------------------
+
+function GruposVancouver({ r, projetoId }: { r: ResultadoAuditoria; projetoId: string }) {
+  const v = r.vancouver!;
+  const avisar = useAvisos();
+  const texto = (pi: number) => r.corpo[pi]?.texto ?? '';
+  const [aplicando, setAplicando] = useState(false);
+  return (
+    <>
+      <Grupo titulo="Número citado que não está na lista" n={v.semReferencia.length} tom="perigo"
+        explicacao="O texto cita um número que não aparece na lista de referências. Pode faltar a referência ou o número estar errado.">
+        {v.semReferencia.map((s) => (
+          <li key={s.numero} className="rounded-md bg-fundo p-3">
+            <p className="text-sm font-medium">Número {s.numero} <span className="font-normal text-cinza-500">· {s.ocorrencias.length} {s.ocorrencias.length === 1 ? 'vez' : 'vezes'}</span></p>
+            <p className="mt-1"><Trecho texto={texto(s.ocorrencias[0].paragrafo)} inicio={s.ocorrencias[0].inicio} fim={s.ocorrencias[0].fim} /></p>
+          </li>
+        ))}
+      </Grupo>
+      <Grupo titulo="Numeração fora da ordem de citação" n={v.foraDeOrdem.length}
+        explicacao="No Vancouver, as obras são numeradas na ordem em que aparecem pela primeira vez no texto. Aqui, a primeira citação deste número aparece antes da do número esperado.">
+        {v.foraDeOrdem.map((f) => (
+          <li key={f.numero} className="rounded-md bg-fundo p-3">
+            <p className="text-sm">Aparece o <span className="font-medium">{f.numero}</span> quando o próximo número novo seria o <span className="font-medium">{f.esperado}</span>.</p>
+            <p className="mt-1"><Trecho texto={texto(f.ocorrencia.paragrafo)} inicio={f.ocorrencia.inicio} fim={f.ocorrencia.fim} /></p>
+          </li>
+        ))}
+      </Grupo>
+      {v.listaSemNumero > 0 && (
+        <p className="flex gap-2 rounded-lg border border-borda bg-superficie px-4 py-3 text-sm text-cinza-600">
+          <Info size={16} className="mt-0.5 shrink-0 text-acao-600" />
+          <span>{v.listaSemNumero === 1 ? '1 referência da lista não começa' : `${v.listaSemNumero} referências da lista não começam`} com número. Consideramos a posição na lista, mas no Vancouver cada referência começa com o seu número.</span>
+        </p>
+      )}
+      {v.numeracao.length > 0 && (
+        <Cartao className="p-4">
+          <h3 className="text-sm font-semibold">Numerar a biblioteca na ordem do TCC</h3>
+          <p className="mt-1 text-sm text-cinza-600">A plataforma encontrou {v.numeracao.length === 1 ? '1 fonte da biblioteca citada' : `${v.numeracao.length} fontes da biblioteca citadas`} no seu arquivo. Cada uma recebe o número da ordem em que aparece pela primeira vez. As fontes que não aparecem no TCC ficam sem número.</p>
+          <ol className="mt-3 flex flex-col gap-1 text-sm text-marinho-700">
+            {v.numeracao.slice(0, 12).map((n) => <li key={n.fonteId}><span className="font-semibold text-acao-700">{n.numero}.</span> {n.rotulo}</li>)}
+            {v.numeracao.length > 12 && <li className="text-cinza-500">e mais {v.numeracao.length - 12}…</li>}
+          </ol>
+          {v.foraDaBiblioteca.length > 0 && <p className="mt-2 text-xs text-cinza-500">Não encontradas na biblioteca: {v.foraDaBiblioteca.map((x) => x.rotulo).join('; ')}.</p>}
+          <Botao className="mt-3" variante="primario" disabled={aplicando} onClick={async () => {
+            setAplicando(true);
+            try {
+              await numerarFontes(projetoId, new Map(v.numeracao.map((n) => [n.fonteId, n.numero])));
+              avisar('sucesso', 'Biblioteca numerada na ordem do TCC.');
+            } finally { setAplicando(false); }
+          }}>Numerar a biblioteca</Botao>
+        </Cartao>
+      )}
+    </>
   );
 }

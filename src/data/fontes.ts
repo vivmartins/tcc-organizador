@@ -122,3 +122,21 @@ export async function excluirFonte(id: string): Promise<void> {
     await db.fontes.delete(id);
   });
 }
+
+/** Vancouver: define (ou apaga) o número da fonte na lista de referências. */
+export async function definirNumeroVancouver(id: string, numero: number | undefined): Promise<void> {
+  const n = numero && Number.isInteger(numero) && numero > 0 ? numero : undefined;
+  await db.fontes.update(id, { numeroVancouver: n, atualizadoEm: agora() });
+}
+
+/** Vancouver: numera as fontes do projeto de uma vez (ex.: na ordem de citação do TCC).
+ *  As fontes que não estão no mapa ficam sem número. */
+export async function numerarFontes(projetoId: string, numeros: Map<string, number>): Promise<void> {
+  await db.transaction('rw', db.fontes, async () => {
+    const t = agora();
+    for (const f of await db.fontes.where('projetoId').equals(projetoId).toArray()) {
+      const n = numeros.get(f.id);
+      if (f.numeroVancouver !== n) await db.fontes.update(f.id, { numeroVancouver: n, atualizadoEm: t });
+    }
+  });
+}

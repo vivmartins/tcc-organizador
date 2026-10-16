@@ -27,6 +27,12 @@ describe('ler o TCC em Word', () => {
     expect(ps.filter((p) => p.texto === 'Caixa')).toHaveLength(1); // o texto da caixa aparece uma vez só
   });
 
+  test('número sobrescrito (Vancouver) vira ¹²³ no texto', async () => {
+    const sup = (t: string) => `<w:r><w:rPr><w:vertAlign w:val="superscript"/></w:rPr><w:t>${t}</w:t></w:r>`;
+    const ps = await lerDocx(docx(`<w:p><w:r><w:t>menos de dois milímetros</w:t></w:r>${sup('1,3-5')}<w:r><w:t xml:space="preserve"> e 10 cm</w:t></w:r>${sup('2')}<w:r><w:t>.</w:t></w:r>${sup('nota')}</w:p>`));
+    expect(ps[0].texto).toBe('menos de dois milímetros¹,³⁻⁵ e 10 cm².nota');
+  });
+
   test('recusa .doc antigo e arquivo que não é Word', async () => {
     await expect(lerDocumentoTcc(new File(['x'], 'tcc.doc'))).rejects.toThrow('Salvar como');
     await expect(lerDocx(zipSync({ 'a.txt': strToU8('oi') }))).rejects.toThrow('não parece');

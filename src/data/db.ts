@@ -30,6 +30,10 @@ export interface Projeto extends Datas {
   etAlNasReferencias?: boolean;
   /** Sobrenome em MAIÚSCULAS na citação entre parênteses: (SILVA, 2021). Padrão anterior à NBR 10520:2023, ainda pedido por algumas instituições. */
   citacaoMaiusculas?: boolean;
+  /** Norma das referências e citações: ABNT (padrão) ou Vancouver. */
+  normaReferencias?: 'abnt' | 'vancouver';
+  /** Vancouver: número sobrescrito (padrão), entre parênteses ou entre colchetes. */
+  chamadaVancouver?: 'sobrescrito' | 'parenteses' | 'colchetes';
   /** Projeto de exemplo, criado para conhecer o app. */
   exemplo?: boolean;
 }
@@ -52,6 +56,8 @@ export interface Fonte extends DadosBibliograficos, Datas {
   resumo: ResumoEstudo;
   origemMetadados: OrigemMetadados;
   statusCampos: Partial<Record<CampoBibliografico, StatusCampo>>;
+  /** Vancouver: número da obra na lista (ordem da primeira citação no TCC). */
+  numeroVancouver?: number;
 }
 
 export interface Tag {
