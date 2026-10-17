@@ -296,8 +296,34 @@ export function FormularioFonte() {
     return status;
   }
 
-  function aplicarImportacao({ resultado, url, modo }: Importacao) {
+  /** Dados lidos do PDF sem DOI: preenche só o que ainda está vazio, sem apagar o que foi digitado. */
+  function complementarComPdf(resultado: NonNullable<Importacao['resultado']>) {
     if (!e) return;
+    const r = resultado.dados;
+    const novo: Estado = { ...e, textos: { ...e.textos } };
+    const preenchidos: string[] = [];
+    const vazio = (s?: string) => !s?.trim();
+    const formularioVazio = vazio(e.titulo) && e.autores.every((a) => vazio(a.sobrenome)) && Object.values(e.textos).every((v) => vazio(v));
+    if (r.tipo && formularioVazio) novo.tipo = r.tipo;
+    if (r.titulo && vazio(e.titulo)) { novo.titulo = r.titulo; preenchidos.push('titulo'); if (r.subtitulo && vazio(e.subtitulo)) { novo.subtitulo = r.subtitulo; preenchidos.push('subtitulo'); } }
+    if (r.autores?.length && e.autores.every((a) => vazio(a.sobrenome) && vazio(a.prenomes))) { novo.autores = r.autores; preenchidos.push('autores'); }
+    if (r.ano && vazio(e.ano)) { novo.ano = String(r.ano); preenchidos.push('ano'); }
+    for (const c of Object.keys(ROTULO_FORM) as CampoForm[]) {
+      const v = r[c];
+      if ((typeof v === 'string' || typeof v === 'number') && vazio(e.textos[c])) { novo.textos[c] = String(v); preenchidos.push(c); }
+    }
+    const norm = normalizarDadosFonte(montarDados(novo, [])) as unknown as Record<string, unknown>;
+    const marcados: Record<string, string> = { ...importados };
+    for (const c of preenchidos) if (norm[c] !== undefined) marcados[c] = JSON.stringify(norm[c]);
+    setImportados(marcados);
+    setOrigem('pdf');
+    setE(novo);
+    setVersaoForm((v) => v + 1);
+  }
+
+  function aplicarImportacao({ resultado, url, modo, complementar }: Importacao) {
+    if (!e) return;
+    if (complementar && resultado) return complementarComPdf(resultado);
     setResumoImportado(resultado?.resumo ?? null);
     setTemasExternos([]);
     if (!e.palavrasChave.trim()) setOrigemPalavras(null);

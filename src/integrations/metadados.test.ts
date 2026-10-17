@@ -208,3 +208,22 @@ describe('URL e subtítulo', () => {
     expect(separarTitulo('COVID-19 e radioterapia')).toEqual({ titulo: 'COVID-19 e radioterapia' });
   });
 });
+
+describe('busca pelo título (PDF sem DOI)', async () => {
+  const { procurarPorTitulo, semelhancaDeTitulos } = await import('./metadados.ts');
+  const resposta = (corpo: unknown) => Promise.resolve(new Response(JSON.stringify(corpo), { status: 200 }));
+  const crossref = { message: { items: [
+    { DOI: '10.1/outro', title: ['Radioterapia em idosos'], author: [{ given: 'Ana', family: 'Lima' }], issued: { 'date-parts': [[2020]] } },
+    { DOI: '10.1/certo', title: ['Verificação diária por imagem na radioterapia de próstata'], subtitle: ['impacto nas margens de planejamento'], author: [{ given: 'Mariana', family: 'Ribeiro' }], issued: { 'date-parts': [[2021]] }, 'container-title': ['Rev Bras Fis Med'] },
+  ] } };
+  const buscar = (u: string) => (u.includes('crossref') ? resposta(crossref) : resposta({ results: [] }));
+
+  test('acha só com título igual, mesmo primeiro autor e ano próximo', async () => {
+    const t = 'Verificação diária por imagem na radioterapia de próstata: impacto nas margens de planejamento';
+    expect((await procurarPorTitulo(t, ['Ribeiro'], 2021, buscar))?.doi).toBe('10.1/certo');
+    expect(await procurarPorTitulo(t, ['Souza'], 2021, buscar)).toBeNull();
+    expect(await procurarPorTitulo(t, ['Ribeiro'], 2015, buscar)).toBeNull();
+    expect(await procurarPorTitulo('Radioterapia guiada por imagem em crianças pequenas', [], undefined, buscar)).toBeNull();
+    expect(semelhancaDeTitulos('A B C D', 'a b c d')).toBe(1);
+  });
+});

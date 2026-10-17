@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
 import { Download, FileText, Link2, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
-import { buscarPorDoi, ErroDeImportacao, type ResultadoImportacao } from '../../../integrations/metadados.ts';
+import { buscarPorDoi, procurarPorTitulo, ErroDeImportacao, type Candidato, type ResultadoImportacao } from '../../../integrations/metadados.ts';
+import type { LeituraDaCapa } from '../../../domain/capaPdf.ts';
+import { ROTULO_CAMPO, type CampoBibliografico } from '../../../domain/tipos.ts';
 import { lerPdf } from '../../../integrations/pdf.ts';
 import { extrairDoi } from '../../../domain/duplicatas.ts';
 import type { PalavrasEncontradas } from '../../../domain/palavrasChave.ts';
@@ -14,6 +16,8 @@ export interface Importacao {
   /** Link digitado, quando a importação foi por link. */
   url?: string;
   modo: Modo;
+  /** Só preenche os campos que estão vazios (dados lidos do PDF, sem DOI). */
+  complementar?: boolean;
 }
 
 /** Palavras-chave e temas já em português, entregues depois dos dados (a tradução pode levar alguns segundos). */
@@ -23,10 +27,23 @@ export interface Assuntos {
   origem: 'autores' | 'autores_traduzidas' | 'openalex';
 }
 
-const ROTULO_SERVICO = { crossref: 'Crossref', openalex: 'OpenAlex' };
+const ROTULO_SERVICO = { crossref: 'Crossref', openalex: 'OpenAlex', pdf: 'PDF' };
 const NOME_IDIOMA = { en: 'inglês', es: 'espanhol' } as const;
 
 export interface TextoLido { texto: string; paginas: number; nomeArquivo: string }
+
+const NOME_NA_MENSAGEM: Partial<Record<CampoBibliografico, string>> = { veiculo: 'periódico ou instituição', tipoTrabalho: 'tipo do trabalho', localPublicacao: 'local' };
+
+function juntarLista(itens: string[]): string {
+  return itens.length <= 1 ? (itens[0] ?? '') : `${itens.slice(0, -1).join(', ')} e ${itens[itens.length - 1]}`;
+}
+
+/** Dados lidos do PDF no mesmo formato da importação por DOI (marcados como vindos do PDF). */
+function resultadoDaCapa(capa: LeituraDaCapa): ResultadoImportacao {
+  const origemDosCampos: ResultadoImportacao['origemDosCampos'] = {};
+  for (const k of Object.keys(capa.dados)) origemDosCampos[k as keyof typeof origemDosCampos] = 'pdf';
+  return { dados: capa.dados, origemDosCampos, servicos: ['pdf'], palavrasChave: [], temas: [] };
+}
 
 export function PainelImportacao({ modoInicial = 'doi', aoImportar, aoReceberAssuntos, aoLerPdf }: { modoInicial?: Modo; aoImportar: (i: Importacao) => void; aoReceberAssuntos: (a: Assuntos) => void; aoLerPdf?: (t: TextoLido) => void }) {
   const [modo, setModo] = useState<Modo>(modoInicial);
@@ -35,6 +52,8 @@ export function PainelImportacao({ modoInicial = 'doi', aoImportar, aoReceberAss
   const [traduzindo, setTraduzindo] = useState(false);
   const [mensagem, setMensagem] = useState<{ tipo: 'ok' | 'aviso' | 'erro'; texto: string } | null>(null);
   const arquivo = useRef<HTMLInputElement>(null);
+  /** Obra encontrada pelo título do PDF (com DOI): a pessoa decide se usa. */
+  const [sugestao, setSugestao] = useState<{ c: Candidato; palavras: PalavrasEncontradas | null } | null>(null);
 
   const acrescentarAviso = (texto: string) => setMensagem((m) => ({ tipo: m?.tipo === 'erro' ? 'erro' : 'aviso', texto: m ? `${m.texto} ${texto}` : texto }));
 
@@ -110,6 +129,7 @@ export function PainelImportacao({ modoInicial = 'doi', aoImportar, aoReceberAss
   async function escolherPdf(f?: File) {
     if (!f) return;
     setMensagem(null);
+    setSugestao(null);
     setCarregando('Lendo o PDF…');
     let leitura: Awaited<ReturnType<typeof lerPdf>>;
     try {
@@ -124,15 +144,43 @@ export function PainelImportacao({ modoInicial = 'doi', aoImportar, aoReceberAss
     setCarregando(null);
     aoLerPdf?.({ texto: leitura.texto, paginas: leitura.paginas, nomeArquivo: f.name });
     if (!leitura.doi) {
+      const capa = leitura.capa;
+      const campos = Object.keys(capa.dados).filter((k) => k !== 'tipo') as CampoBibliografico[];
+      if (campos.length) aoImportar({ modo: 'pdf', resultado: resultadoDaCapa(capa), complementar: true });
+      const lidos = campos.map((c) => NOME_NA_MENSAGEM[c] ?? ROTULO_CAMPO[c]);
       setMensagem({
         tipo: 'aviso',
-        texto: `Não encontramos um DOI em “${f.name}”. ${leitura.palavrasChave ? 'Aproveitamos as palavras-chave dos autores (em “Palavras-chave”); complete os demais dados abaixo.' : 'Preencha os dados manualmente abaixo (o título costuma estar na primeira página).'}`,
+        texto: `Não encontramos um DOI em “${f.name}”. ${
+          lidos.length
+            ? `Lemos do próprio PDF: ${juntarLista(lidos)}. Confira cada campo com o arquivo e complete o que faltar${capa.avisos.length ? ` (${capa.avisos.join(' ')})` : ''}.`
+            : 'Não deu para ler o título e a autoria deste PDF; preencha os dados abaixo (o título costuma estar na primeira página).'
+        }${leitura.palavrasChave ? ' As palavras-chave dos autores foram para “Palavras-chave”.' : ''}`,
       });
       await processarAssuntos(leitura.palavrasChave, null);
+      if (capa.dados.titulo) {
+        setCarregando('Procurando este trabalho pelo título no Crossref e no OpenAlex…');
+        try {
+          const titulo = [capa.dados.titulo, capa.dados.subtitulo].filter(Boolean).join(': ');
+          const c = await procurarPorTitulo(titulo, (capa.dados.autores ?? []).map((a) => a.sobrenome), capa.dados.ano);
+          if (c) setSugestao({ c, palavras: leitura.palavrasChave });
+        } catch {
+          // sem internet: fica com o que foi lido do PDF
+        } finally {
+          setCarregando(null);
+        }
+      }
       return;
     }
     setValor(leitura.doi);
     await importarDoi(leitura.doi, { modo: 'pdf' }, leitura.palavrasChave);
+  }
+
+  async function usarSugestao() {
+    if (!sugestao) return;
+    const { c, palavras } = sugestao;
+    setSugestao(null);
+    setValor(c.doi);
+    await importarDoi(c.doi, { modo: 'pdf' }, palavras);
   }
 
   const abas: [Modo, string, typeof Download][] = [['doi', 'DOI', Download], ['link', 'Link', Link2], ['pdf', 'PDF', FileText]];
@@ -153,7 +201,7 @@ export function PainelImportacao({ modoInicial = 'doi', aoImportar, aoReceberAss
         <div className="mt-3">
           <input ref={arquivo} type="file" accept="application/pdf,.pdf" className="hidden" aria-label="Arquivo PDF" onChange={(e) => escolherPdf(e.target.files?.[0])} />
           <Botao onClick={() => { void prepararTradutor('en'); void prepararTradutor('es'); arquivo.current?.click(); }} disabled={!!carregando}><FileText size={15} /> Escolher PDF</Botao>
-          <p className="mt-1.5 text-xs text-cinza-500">O PDF é lido aqui no seu navegador para encontrar o DOI. Ele não é enviado para lugar nenhum nem guardado no app.</p>
+          <p className="mt-1.5 text-xs text-cinza-500">O PDF é lido aqui no seu navegador para encontrar o DOI ou, sem DOI, o título, a autoria e o ano. O arquivo não é enviado para lugar nenhum nem guardado na plataforma.</p>
         </div>
       ) : (
         <div className="mt-3 flex flex-col gap-2 sm:flex-row">
@@ -176,6 +224,23 @@ export function PainelImportacao({ modoInicial = 'doi', aoImportar, aoReceberAss
 
       {carregando && <p role="status" className="mt-3 flex items-center gap-2 text-sm text-cinza-600"><Loader2 size={15} className="animate-spin" /> {carregando}</p>}
       {traduzindo && !carregando && <p role="status" className="mt-3 flex items-center gap-2 text-xs text-cinza-600"><Loader2 size={13} className="animate-spin" /> Traduzindo palavras-chave e tópicos para o português…</p>}
+      {sugestao && !carregando && (
+        <div role="status" className="mt-3 rounded-md border border-acao-600/25 bg-acao-50 px-4 py-3 text-sm text-marinho-700">
+          <p className="font-medium">Encontramos um trabalho com o mesmo título no {sugestao.c.servico === 'crossref' ? 'Crossref' : 'OpenAlex'}, com DOI:</p>
+          <p className="mt-1.5">
+            <span className="font-medium">{sugestao.c.titulo}</span>
+            {sugestao.c.autores.length > 0 && <span> · {sugestao.c.autores.slice(0, 4).join(', ')}{sugestao.c.autores.length > 4 ? ' et al.' : ''}</span>}
+            {sugestao.c.ano && <span> · {sugestao.c.ano}</span>}
+            {sugestao.c.veiculo && <span> · {sugestao.c.veiculo}</span>}
+          </p>
+          <p className="mt-0.5 text-xs text-cinza-600">DOI: {sugestao.c.doi}</p>
+          <p className="mt-2 text-xs text-cinza-600">Se for o mesmo trabalho do seu PDF, os dados do DOI costumam ser mais completos (periódico, volume, páginas).</p>
+          <div className="mt-2.5 flex flex-wrap gap-2">
+            <Botao variante="primario" onClick={() => void usarSugestao()}>É este: usar os dados do DOI</Botao>
+            <Botao onClick={() => setSugestao(null)}>Não é este</Botao>
+          </div>
+        </div>
+      )}
       {mensagem && !carregando && (
         <p role={mensagem.tipo === 'erro' ? 'alert' : 'status'} className={cx('mt-3 flex items-start gap-2 rounded-md px-3 py-2 text-sm', mensagem.tipo === 'ok' ? 'bg-sucesso-50 text-sucesso-700' : mensagem.tipo === 'aviso' ? 'bg-alerta-50 text-alerta-700' : 'bg-perigo-50 text-perigo-700')}>
           {mensagem.tipo === 'ok' ? <CheckCircle2 size={16} className="mt-0.5 shrink-0" /> : <AlertCircle size={16} className="mt-0.5 shrink-0" />}

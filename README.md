@@ -35,7 +35,7 @@ Serviços externos usados, sempre a partir do navegador de quem usa:
 |---|---|
 | Início (sem projeto) | Entrada livre: a pessoa vê cada seção, abre um projeto de exemplo fictício ou inicia o próprio projeto quando quiser |
 | Visão geral | Indicadores calculados dos dados reais, prazo, próximas tarefas, atalhos |
-| Biblioteca | Cadastro manual ou por DOI/link/PDF, busca sem acento, filtros, duplicatas, temas sugeridos |
+| Biblioteca | Cadastro manual ou por DOI/link/PDF (sem DOI, lê título, autoria e ano da 1ª página e procura o DOI pelo título), busca sem acento, filtros, duplicatas, temas sugeridos |
 | Página da fonte | Referência ABNT (NBR 6023:2025) com pendências, citação (NBR 10520:2023), resumo, fichas |
 | Fichamentos | Citações (trecho original preservado), paráfrases, ideias, com página e capítulo |
 | Planejamento | Etapas, tarefas, cronograma, progresso por tarefas concluídas, planejamento sugerido |

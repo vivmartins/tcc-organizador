@@ -10,7 +10,7 @@
 import type { Autor, CampoBibliografico, DadosBibliograficos, TipoPublicacao } from '../domain/tipos.ts';
 import { normalizarDoi } from '../domain/abnt/referencia.ts';
 
-export type FonteDeDados = 'crossref' | 'openalex';
+export type FonteDeDados = 'crossref' | 'openalex' | 'pdf';
 export type Importado = Partial<Omit<DadosBibliograficos, 'statusCampos'>>;
 
 export interface ResultadoImportacao {
@@ -327,4 +327,88 @@ export async function buscarPorDoi(doiDigitado: string, buscar: Buscar = (u) => 
   }
   resultado.dados.doi = resultado.dados.doi ?? doi;
   return resultado;
+}
+
+// ---------------------------------------------------------------------
+// Busca pelo título (PDF sem DOI)
+// ---------------------------------------------------------------------
+
+export interface Candidato {
+  doi: string;
+  titulo: string;
+  autores: string[];
+  ano?: number;
+  veiculo?: string;
+  servico: 'crossref' | 'openalex';
+}
+
+const comparavel = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/<[^>]+>/g, ' ').replace(/[^a-z0-9]+/g, ' ').trim();
+
+/** Semelhança entre dois títulos (0 a 1), pelas palavras em comum. */
+export function semelhancaDeTitulos(a: string, b: string): number {
+  const pa = comparavel(a).split(' ').filter(Boolean);
+  const pb = comparavel(b).split(' ').filter(Boolean);
+  if (!pa.length || !pb.length) return 0;
+  const conta = new Map<string, number>();
+  for (const p of pb) conta.set(p, (conta.get(p) ?? 0) + 1);
+  let comum = 0;
+  for (const p of pa) {
+    const n = conta.get(p) ?? 0;
+    if (n > 0) { comum++; conta.set(p, n - 1); }
+  }
+  return (2 * comum) / (pa.length + pb.length);
+}
+
+/**
+ * Procura no Crossref e no OpenAlex uma obra com o MESMO título (e, se soubermos, o mesmo primeiro
+ * autor e ano). Só devolve quando a correspondência é forte; a pessoa ainda decide se usa.
+ */
+export async function procurarPorTitulo(
+  titulo: string,
+  sobrenomes: string[] = [],
+  ano?: number,
+  buscar: Buscar = (u) => fetch(u, { headers: { Accept: 'application/json' } }),
+): Promise<Candidato | null> {
+  if (comparavel(titulo).split(' ').length < 4) return null; // título curto demais para ter certeza
+  const consulta = encodeURIComponent([titulo, sobrenomes[0]].filter(Boolean).join(' '));
+  const [cr, oa] = await Promise.allSettled([
+    obterJson(buscar, `https://api.crossref.org/works?query.bibliographic=${consulta}&rows=5&select=DOI,title,subtitle,author,issued,container-title`),
+    obterJson(buscar, `https://api.openalex.org/works?search=${encodeURIComponent(titulo)}&per_page=5&select=doi,title,authorships,publication_year,primary_location`),
+  ]);
+  const candidatos: Candidato[] = [];
+  if (cr.status === 'fulfilled' && cr.value) {
+    const itens = (cr.value as { message?: { items?: (MensagemCrossref & { DOI?: string; 'container-title'?: string[] })[] } }).message?.items ?? [];
+    for (const i of itens) {
+      const t = [i.title?.[0], i.subtitle?.[0]].filter(Boolean).join(': ');
+      if (!i.DOI || !t) continue;
+      candidatos.push({
+        doi: i.DOI, titulo: limparTexto(t) ?? t, servico: 'crossref',
+        autores: (i.author ?? []).map((a) => [a.given, a.family].filter(Boolean).join(' ') || a.name || '').filter(Boolean),
+        ano: (i as { issued?: { 'date-parts'?: number[][] } }).issued?.['date-parts']?.[0]?.[0] ?? undefined,
+        veiculo: i['container-title']?.[0],
+      });
+    }
+  }
+  if (oa.status === 'fulfilled' && oa.value) {
+    const itens = (oa.value as { results?: { doi?: string | null; title?: string | null; publication_year?: number | null; authorships?: { author?: { display_name?: string } }[]; primary_location?: { source?: { display_name?: string } | null } | null }[] }).results ?? [];
+    for (const i of itens) {
+      if (!i.doi || !i.title) continue;
+      candidatos.push({
+        doi: normalizarDoi(i.doi), titulo: limparTexto(i.title) ?? i.title, servico: 'openalex',
+        autores: (i.authorships ?? []).map((a) => a.author?.display_name ?? '').filter(Boolean),
+        ano: i.publication_year ?? undefined, veiculo: i.primary_location?.source?.display_name ?? undefined,
+      });
+    }
+  }
+  const sobrenome = sobrenomes[0] ? comparavel(sobrenomes[0]).split(' ').pop()! : null;
+  const bons = candidatos
+    .map((c) => ({ c, s: Math.max(semelhancaDeTitulos(titulo, c.titulo), semelhancaDeTitulos(titulo, c.titulo.split(':')[0])) }))
+    .filter(({ c, s }) => {
+      if (s < 0.9) return false;
+      if (sobrenome && c.autores.length && !c.autores.some((a) => comparavel(a).split(' ').includes(sobrenome))) return false;
+      if (ano && c.ano && Math.abs(c.ano - ano) > 1) return false;
+      return true;
+    })
+    .sort((x, y) => y.s - x.s);
+  return bons[0]?.c ?? null;
 }
