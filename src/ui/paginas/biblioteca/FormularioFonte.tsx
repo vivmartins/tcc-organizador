@@ -361,7 +361,7 @@ export function FormularioFonte() {
       const r = await buscarPorDoi(e.doi);
       const [palavras, temas] = await Promise.all([traduzirTermos(r.palavrasChave, 'en'), traduzirTermos(r.temas, 'en')]);
       if ((palavras === null && r.palavrasChave.length) || (temas === null && r.temas.length)) {
-        avisar('erro', 'Esses termos só existem em inglês e não deu para traduzir neste navegador. Se quiser, digite-os em português.');
+        avisar('erro', 'Não deu para traduzir esses termos para o português agora. Tente de novo daqui a pouco, ou digite-os em português.');
         return;
       }
       r.palavrasChave = palavras ?? [];

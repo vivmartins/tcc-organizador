@@ -4,7 +4,7 @@ import { buscarPorDoi, ErroDeImportacao, type ResultadoImportacao } from '../../
 import { lerPdf } from '../../../integrations/pdf.ts';
 import { extrairDoi } from '../../../domain/duplicatas.ts';
 import type { PalavrasEncontradas } from '../../../domain/palavrasChave.ts';
-import { prepararTradutor, traduzirTermos, motivoSemTraducao } from '../../../integrations/traducao.ts';
+import { prepararTradutor, traduzirTermos } from '../../../integrations/traducao.ts';
 import { Botao, Cartao, Entrada, cx } from '../../componentes/base.tsx';
 
 export type Modo = 'doi' | 'link' | 'pdf';
@@ -63,14 +63,7 @@ export function PainelImportacao({ modoInicial = 'doi', aoImportar, aoReceberAss
       setTraduzindo(false);
     }
     if (naoUsados.length) {
-      const motivo = motivoSemTraducao();
-      acrescentarAviso(
-        motivo === 'sem_api'
-          ? 'As palavras-chave só vieram em inglês, e este navegador não tem o tradutor embutido (ele existe no Chrome e no Edge do computador, em versões recentes; no celular ainda não). Se quiser, digite-as em português.'
-          : motivo === 'baixando'
-            ? 'As palavras-chave só vieram em inglês, e o navegador ainda está baixando o pacote de tradução (só na primeira vez). Tente buscar de novo daqui a alguns minutos, ou digite-as em português.'
-            : 'As palavras-chave só vieram em inglês, e o tradutor do navegador não respondeu agora. Tente de novo mais tarde, ou digite-as em português.',
-      );
+      acrescentarAviso('Não deu para traduzir as palavras-chave para o português agora (o tradutor do navegador e o serviço de tradução on-line não responderam). Tente buscar de novo daqui a pouco, ou digite-as em português.');
     }
   }
 
@@ -182,7 +175,7 @@ export function PainelImportacao({ modoInicial = 'doi', aoImportar, aoReceberAss
       )}
 
       {carregando && <p role="status" className="mt-3 flex items-center gap-2 text-sm text-cinza-600"><Loader2 size={15} className="animate-spin" /> {carregando}</p>}
-      {traduzindo && !carregando && <p role="status" className="mt-3 flex items-center gap-2 text-xs text-cinza-600"><Loader2 size={13} className="animate-spin" /> Traduzindo palavras-chave e tópicos para o português… (na primeira vez, o navegador baixa o tradutor)</p>}
+      {traduzindo && !carregando && <p role="status" className="mt-3 flex items-center gap-2 text-xs text-cinza-600"><Loader2 size={13} className="animate-spin" /> Traduzindo palavras-chave e tópicos para o português…</p>}
       {mensagem && !carregando && (
         <p role={mensagem.tipo === 'erro' ? 'alert' : 'status'} className={cx('mt-3 flex items-start gap-2 rounded-md px-3 py-2 text-sm', mensagem.tipo === 'ok' ? 'bg-sucesso-50 text-sucesso-700' : mensagem.tipo === 'aviso' ? 'bg-alerta-50 text-alerta-700' : 'bg-perigo-50 text-perigo-700')}>
           {mensagem.tipo === 'ok' ? <CheckCircle2 size={16} className="mt-0.5 shrink-0" /> : <AlertCircle size={16} className="mt-0.5 shrink-0" />}

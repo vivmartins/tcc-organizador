@@ -1,7 +1,9 @@
-// Tradução de palavras-chave e tópicos para o português, usando o tradutor EMBUTIDO no navegador
-// (Chrome 138+ e Edge 148+, no computador). A tradução acontece no próprio aparelho: sem custo e
-// sem enviar nada para servidores. Se o navegador não tiver o tradutor, devolvemos null e os termos
-// estrangeiros NÃO são usados.
+// Tradução de palavras-chave e tópicos para o português.
+// 1º) Tradutor EMBUTIDO no navegador (Chrome 138+ e Edge 148+, no computador): traduz no próprio aparelho.
+// 2º) Se ele não existir ou não responder, o serviço gratuito MyMemory (api.mymemory.translated.net).
+//     Só vão para lá os termos curtos que vieram do artigo (públicos, do OpenAlex ou do PDF), nunca
+//     dados da pessoa nem o texto do TCC.
+// Se nenhum dos dois funcionar, devolvemos null e os termos estrangeiros NÃO são usados.
 
 import { juntarPalavrasChave } from '../domain/palavrasChave.ts';
 
@@ -67,9 +69,12 @@ export function prepararTradutor(de: IdiomaOrigem): Promise<Tradutor | null> {
   return p;
 }
 
-/** Traduz uma lista de termos curtos. Devolve null se a tradução não estiver disponível. */
-export async function traduzirTermos(termos: string[], de: IdiomaOrigem): Promise<string[] | null> {
-  if (termos.length === 0) return [];
+const arrumar = (bruto: string) => {
+  const t = bruto.trim().replace(/[.。]+$/, '');
+  return t ? t.charAt(0).toLocaleUpperCase('pt-BR') + t.slice(1) : '';
+};
+
+async function comEmbutido(termos: string[], de: IdiomaOrigem): Promise<string[] | null> {
   const tradutor = await prepararTradutor(de);
   if (!tradutor) return null;
   const traduzidos: string[] = [];
@@ -77,16 +82,54 @@ export async function traduzirTermos(termos: string[], de: IdiomaOrigem): Promis
     try {
       const bruto = await comLimite(tradutor.translate(termo), LIMITE_TERMO_MS);
       if (bruto === null) return null;
-      const t = bruto.trim().replace(/[.。]+$/, '');
-      if (t) traduzidos.push(t.charAt(0).toLocaleUpperCase('pt-BR') + t.slice(1));
+      traduzidos.push(arrumar(bruto));
     } catch {
       return null;
     }
   }
-  return juntarPalavrasChave(traduzidos);
+  return traduzidos;
+}
+
+export const ENDERECO_MYMEMORY = 'https://api.mymemory.translated.net/get';
+const memoriaOnline = new Map<string, string>();
+
+async function umTermoOnline(termo: string, de: IdiomaOrigem): Promise<string | null> {
+  const chave = `${de}|${termo.toLowerCase()}`;
+  const salvo = memoriaOnline.get(chave);
+  if (salvo) return salvo;
+  const url = `${ENDERECO_MYMEMORY}?q=${encodeURIComponent(termo)}&langpair=${de}|pt-BR`;
+  const resposta = await comLimite(fetch(url).then((r) => (r.ok ? r.json() : null)), LIMITE_TERMO_MS);
+  const texto: unknown = resposta?.responseData?.translatedText;
+  if (typeof texto !== 'string' || !texto.trim() || /MYMEMORY WARNING|QUERY LENGTH LIMIT|INVALID/i.test(texto)) return null;
+  if (resposta.responseStatus && Number(resposta.responseStatus) !== 200) return null;
+  // o serviço devolve entidades HTML em alguns casos (&#39;)
+  const limpo = texto.replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n))).replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+  memoriaOnline.set(chave, limpo);
+  return limpo;
+}
+
+async function comServicoOnline(termos: string[], de: IdiomaOrigem): Promise<string[] | null> {
+  if (typeof fetch !== 'function') return null;
+  try {
+    const r = await Promise.all(termos.slice(0, 25).map((t) => umTermoOnline(t, de)));
+    if (r.some((t) => t === null)) return null;
+    return (r as string[]).map(arrumar);
+  } catch {
+    return null;
+  }
+}
+
+/** Traduz uma lista de termos curtos. Devolve null se a tradução não estiver disponível. */
+export async function traduzirTermos(termos: string[], de: IdiomaOrigem, opcoes: { online?: boolean } = {}): Promise<string[] | null> {
+  if (termos.length === 0) return [];
+  const traduzidos = (await comEmbutido(termos, de)) ?? (opcoes.online === false ? null : await comServicoOnline(termos, de));
+  if (!traduzidos) return null;
+  motivo = null;
+  return juntarPalavrasChave(traduzidos.filter(Boolean));
 }
 
 /** Só para os testes: esquece os tradutores preparados. */
 export function _limparCacheDeTradutores() {
   cache.clear();
+  memoriaOnline.clear();
 }

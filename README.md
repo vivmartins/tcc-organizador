@@ -25,8 +25,9 @@ Para não perder dados:
 
 Serviços externos usados, sempre a partir do navegador de quem usa:
 - **Crossref** e **OpenAlex**: dados bibliográficos pelo DOI (sem chave, gratuitos).
-- **Tradutor embutido do Chrome/Edge**: traduz palavras-chave e tópicos para o português, no próprio
-  computador. Sem ele, termos em outro idioma não são usados.
+- **Tradução de palavras-chave e tópicos** para o português: primeiro o tradutor embutido do
+  Chrome/Edge (no próprio computador); se ele não existir ou não responder, o serviço gratuito
+  **MyMemory**, que recebe só esses termos curtos do artigo. Sem tradução, termos em outro idioma não são usados.
 
 ## Funcionalidades
 

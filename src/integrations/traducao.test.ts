@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { traduzirTermos, prepararTradutor, _limparCacheDeTradutores } from './traducao.ts';
 
 const DICIONARIO: Record<string, string> = { Radiotherapy: 'Radioterapia', 'patient communication': 'comunicação com o paciente.', Oncology: 'Oncologia', Radiation: 'radioterapia' };
@@ -12,7 +12,11 @@ function instalarTradutor(disponibilidade = 'available', criados: string[] = [])
   };
 }
 
+// Por padrão, sem internet: o serviço on-line falha (cada teste que o usa instala a sua resposta).
+beforeEach(() => { vi.stubGlobal('fetch', () => Promise.reject(new Error('offline'))); });
+
 afterEach(() => {
+  vi.unstubAllGlobals();
   delete (globalThis as Record<string, unknown>).Translator;
   _limparCacheDeTradutores();
 });
@@ -58,5 +62,33 @@ describe('tempo-limite', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+describe('serviço on-line (quando o navegador não tem o tradutor)', () => {
+  test('usa o MyMemory, um termo por pedido, e arruma a resposta', async () => {
+    const pedidos: string[] = [];
+    const respostas: Record<string, string> = { Radiotherapy: 'radioterapia', 'patient&#39;s care': 'cuidado do paciente.' };
+    vi.stubGlobal('fetch', async (url: string) => {
+      pedidos.push(url);
+      const q = new URL(url).searchParams.get('q')!;
+      return { ok: true, json: async () => ({ responseStatus: 200, responseData: { translatedText: respostas[q] ?? q } }) };
+    });
+    expect(await traduzirTermos(['Radiotherapy', 'patient&#39;s care'], 'en')).toEqual(['Radioterapia', 'Cuidado do paciente']);
+    expect(pedidos[0]).toContain('langpair=en|pt-BR');
+    expect(pedidos).toHaveLength(2);
+  });
+
+  test('cota esgotada ou erro: devolve null (nada em inglês entra)', async () => {
+    vi.stubGlobal('fetch', async () => ({ ok: true, json: async () => ({ responseStatus: 429, responseData: { translatedText: 'MYMEMORY WARNING: YOU USED ALL AVAILABLE FREE TRANSLATIONS FOR TODAY' } }) }));
+    expect(await traduzirTermos(['Radiotherapy'], 'en')).toBeNull();
+  });
+
+  test('o tradutor do navegador tem prioridade', async () => {
+    let usouOnline = false;
+    vi.stubGlobal('fetch', async () => { usouOnline = true; return { ok: false }; });
+    instalarTradutor();
+    expect(await traduzirTermos(['Oncology'], 'en')).toEqual(['Oncologia']);
+    expect(usouOnline).toBe(false);
   });
 });
