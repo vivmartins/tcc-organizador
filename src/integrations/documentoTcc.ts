@@ -1,5 +1,6 @@
 // Lê o arquivo do TCC (Word .docx ou PDF) no próprio navegador. O arquivo não é enviado nem guardado.
 
+import { carregarModulo } from './versao.ts';
 import type { DocumentoTcc, Paragrafo } from '../domain/auditoria/documento.ts';
 
 export const TAMANHO_MAXIMO_TCC = 60 * 1024 * 1024;
@@ -84,7 +85,7 @@ function textoDoParagrafo(p: Element): string {
 }
 
 export async function lerDocx(dados: Uint8Array): Promise<Paragrafo[]> {
-  const { unzipSync, strFromU8 } = await import('fflate');
+  const { unzipSync, strFromU8 } = await carregarModulo(() => import('fflate'));
   let arquivos: Record<string, Uint8Array>;
   try {
     arquivos = unzipSync(dados, { filter: (f) => f.name === 'word/document.xml' || f.name === 'word/styles.xml' });
@@ -168,8 +169,8 @@ export function montarParagrafos(paginas: Linha[][]): Paragrafo[] {
 }
 
 async function lerPdfDoTcc(dados: Uint8Array): Promise<Paragrafo[]> {
-  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
-  const { default: workerUrl } = await import('pdfjs-dist/legacy/build/pdf.worker.min.mjs?url');
+  const pdfjs = await carregarModulo(() => import('pdfjs-dist/legacy/build/pdf.mjs'));
+  const { default: workerUrl } = await carregarModulo(() => import('pdfjs-dist/legacy/build/pdf.worker.min.mjs?url'));
   pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
   const tarefa = pdfjs.getDocument({ data: dados });
   let doc;

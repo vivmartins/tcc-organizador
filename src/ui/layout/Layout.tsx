@@ -8,6 +8,7 @@ import { cx } from '../componentes/base.tsx';
 import { useProjeto } from '../projetoAtivo.tsx';
 import { definirProjetoAtivo } from '../../data/projetos.ts';
 import { AvisoBackup } from './AvisoBackup.tsx';
+import { AvisoVersaoNova } from './AvisoVersaoNova.tsx';
 import { AvisoExemplo } from '../paginas/Inicio.tsx';
 
 const SECOES = [
@@ -166,6 +167,7 @@ export function Layout() {
       )}
 
       <main className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-8 sm:py-8">
+        <AvisoVersaoNova />
         <AvisoExemplo />
         <Outlet />
       </main>

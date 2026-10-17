@@ -1,6 +1,7 @@
 // Procura o DOI dentro de um PDF, lido inteiramente no navegador (o arquivo não é enviado a lugar nenhum).
 // A biblioteca pdf.js só é carregada quando alguém importa um PDF, para não pesar o app.
 
+import { carregarModulo } from './versao.ts';
 import { extrairDoi } from '../domain/duplicatas.ts';
 import { extrairPalavrasChave, type PalavrasEncontradas } from '../domain/palavrasChave.ts';
 
@@ -21,8 +22,8 @@ export async function lerPdf(arquivo: File, paginasParaDoi = 3): Promise<Leitura
   if (arquivo.type && arquivo.type !== 'application/pdf') throw new Error('Escolha um arquivo PDF.');
   if (arquivo.size > TAMANHO_MAXIMO_PDF) throw new Error('O PDF é grande demais (limite de 50 MB).');
   // Versão "legacy": inclui adaptações para navegadores que ainda não têm os recursos mais novos de JavaScript.
-  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
-  const { default: workerUrl } = await import('pdfjs-dist/legacy/build/pdf.worker.min.mjs?url');
+  const pdfjs = await carregarModulo(() => import('pdfjs-dist/legacy/build/pdf.mjs'));
+  const { default: workerUrl } = await carregarModulo(() => import('pdfjs-dist/legacy/build/pdf.worker.min.mjs?url'));
   pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
   const tarefa = pdfjs.getDocument({ data: new Uint8Array(await arquivo.arrayBuffer()) });
