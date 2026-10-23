@@ -52,6 +52,8 @@ export interface Fonte extends DadosBibliograficos, Datas {
   palavrasChave: string[];
   tagIds: string[];
   statusLeitura: StatusLeitura;
+  /** Quanto a fonte importa para o TCC (o que ler primeiro). Sem valor = ainda não definida. */
+  prioridade?: Prioridade;
   observacoes?: string;
   resumo: ResumoEstudo;
   origemMetadados: OrigemMetadados;

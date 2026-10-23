@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { BookPlus, Search, Library, Copy, X, AlertCircle, ArrowUpDown } from 'lucide-react';
-import { db, type Fonte, type StatusLeitura } from '../../../data/db.ts';
+import { db, type Fonte, type Prioridade, type StatusLeitura } from '../../../data/db.ts';
+import { atualizarPrioridade } from '../../../data/fontes.ts';
 import { AjudaSecao } from '../../ajuda/AjudaSecao.tsx';
 import { useProjetoObrigatorio } from '../../projetoAtivo.tsx';
 import { Botao, BotaoLink, CabecalhoPagina, Cartao, EstadoVazio, Entrada, Selecao, Selo, cx } from '../../componentes/base.tsx';
@@ -11,10 +12,11 @@ import { corresponde, termosDaConsulta } from '../../../domain/busca.ts';
 import { formatoDoProjeto, listaDeReferencias, referenciaDaFonte } from '../../../domain/formato.ts';
 import { ROTULO_TIPO } from '../../../domain/tipos.ts';
 import { copiar, plural } from '../../util.ts';
-import { ROTULO_STATUS_LEITURA, TOM_STATUS_LEITURA, ORDEM_STATUS, autoresCurtos } from './rotulos.ts';
+import { ROTULO_STATUS_LEITURA, TOM_STATUS_LEITURA, ORDEM_STATUS, ORDEM_PRIORIDADE, ROTULO_PRIORIDADE, ROTULO_PRIORIDADE_CURTO, TOM_PRIORIDADE, pesoPrioridade, autoresCurtos } from './rotulos.ts';
 
-type Ordenacao = 'cadastro_desc' | 'cadastro_asc' | 'titulo' | 'autor' | 'ano_desc' | 'ano_asc';
+type Ordenacao = 'prioridade' | 'cadastro_desc' | 'cadastro_asc' | 'titulo' | 'autor' | 'ano_desc' | 'ano_asc';
 const ROTULO_ORDENACAO: Record<Ordenacao, string> = {
+  prioridade: 'Por prioridade',
   cadastro_desc: 'Mais recentes',
   cadastro_asc: 'Mais antigas',
   titulo: 'Título (A–Z)',
@@ -28,6 +30,7 @@ const comparar = (a: string, b: string) => a.localeCompare(b, 'pt-BR', { sensiti
 function ordenar(lista: Fonte[], o: Ordenacao): Fonte[] {
   const l = [...lista];
   switch (o) {
+    case 'prioridade': return l.sort((a, b) => pesoPrioridade(a.prioridade) - pesoPrioridade(b.prioridade) || b.criadoEm.localeCompare(a.criadoEm));
     case 'cadastro_desc': return l.sort((a, b) => b.criadoEm.localeCompare(a.criadoEm));
     case 'cadastro_asc': return l.sort((a, b) => a.criadoEm.localeCompare(b.criadoEm));
     case 'titulo': return l.sort((a, b) => comparar(a.titulo, b.titulo));
@@ -45,6 +48,7 @@ export function Biblioteca() {
 
   const [busca, setBusca] = useState('');
   const [status, setStatus] = useState<StatusLeitura | ''>('');
+  const [prioridade, setPrioridade] = useState<Prioridade | 'sem' | ''>('');
   const [tagId, setTagId] = useState('');
   const [ano, setAno] = useState('');
   const [ordem, setOrdem] = useState<Ordenacao>('cadastro_desc');
@@ -73,6 +77,7 @@ export function Biblioteca() {
     const termos = termosDaConsulta(busca);
     const lista = dados.fontes.filter((f) => {
       if (status && f.statusLeitura !== status) return false;
+      if (prioridade === 'sem' ? !!f.prioridade : prioridade && f.prioridade !== prioridade) return false;
       if (tagId && !f.tagIds.includes(tagId)) return false;
       if (ano && String(f.ano ?? '') !== ano) return false;
       return corresponde(termos, [
@@ -85,10 +90,10 @@ export function Biblioteca() {
       ]);
     });
     return ordenar(lista, ordem);
-  }, [dados, busca, status, tagId, ano, ordem, nomesTags]);
+  }, [dados, busca, status, prioridade, tagId, ano, ordem, nomesTags]);
 
   if (!dados) return null;
-  const filtrosAtivos = !!(busca || status || tagId || ano);
+  const filtrosAtivos = !!(busca || status || prioridade || tagId || ano);
   const idsFiltrados = filtradas.map((f) => f.id);
   const todasMarcadas = idsFiltrados.length > 0 && idsFiltrados.every((id) => selecionadas.has(id));
 
@@ -149,10 +154,15 @@ export function Biblioteca() {
               <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-cinza-500" />
               <Entrada type="search" aria-label="Pesquisar" placeholder="Pesquisar por título, autor, palavra-chave ou anotação…" value={busca} onChange={(e) => setBusca(e.target.value)} className="pl-9" />
             </div>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
               <Selecao aria-label="Status de leitura" value={status} onChange={(e) => setStatus(e.target.value as StatusLeitura | '')}>
                 <option value="">Todos os status</option>
                 {ORDEM_STATUS.map((s) => <option key={s} value={s}>{ROTULO_STATUS_LEITURA[s]}</option>)}
+              </Selecao>
+              <Selecao aria-label="Prioridade" value={prioridade} onChange={(e) => setPrioridade(e.target.value as Prioridade | 'sem' | '')}>
+                <option value="">Todas as prioridades</option>
+                {ORDEM_PRIORIDADE.map((p) => <option key={p} value={p}>{ROTULO_PRIORIDADE[p]}</option>)}
+                <option value="sem">Sem prioridade definida</option>
               </Selecao>
               <Selecao aria-label="Tema ou tag" value={tagId} onChange={(e) => setTagId(e.target.value)} disabled={!dados.tags.length}>
                 <option value="">{dados.tags.length ? 'Todos os temas' : 'Sem temas'}</option>
@@ -195,7 +205,7 @@ export function Biblioteca() {
               />
               <span>{filtrosAtivos ? `${plural(filtradas.length, 'resultado', 'resultados')} de ${dados.fontes.length}` : 'Selecionar todas'}</span>
               {filtrosAtivos && (
-                <button className="ml-auto text-acao-700 hover:underline" onClick={() => { setBusca(''); setStatus(''); setTagId(''); setAno(''); }}>Limpar filtros</button>
+                <button className="ml-auto text-acao-700 hover:underline" onClick={() => { setBusca(''); setStatus(''); setPrioridade(''); setTagId(''); setAno(''); }}>Limpar filtros</button>
               )}
             </div>
             {filtradas.length === 0 ? (
@@ -218,12 +228,23 @@ export function Biblioteca() {
                           {[autoresCurtos(f.autores) || 'Sem autoria', f.ano ?? 'sem ano', f.veiculo].filter(Boolean).join(' · ')}
                         </span>
                         <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                          {f.prioridade && <Selo tom={TOM_PRIORIDADE[f.prioridade]}>{ROTULO_PRIORIDADE[f.prioridade]}</Selo>}
                           <Selo tom={TOM_STATUS_LEITURA[f.statusLeitura]}>{ROTULO_STATUS_LEITURA[f.statusLeitura]}</Selo>
                           <span className="text-xs text-cinza-500">{ROTULO_TIPO[f.tipo]}</span>
                           {f.tagIds.map((id) => nomesTags.has(id) && <Selo key={id}>{nomesTags.get(id)}</Selo>)}
                           {!completa && <Selo tom="alerta"><AlertCircle size={12} /> Dados faltando</Selo>}
                         </span>
                       </Link>
+                      <Selecao
+                        aria-label={`Prioridade de ${f.titulo}`}
+                        title="Prioridade"
+                        value={f.prioridade ?? ''}
+                        onChange={(e) => void atualizarPrioridade(f.id, (e.target.value || null) as Prioridade | null)}
+                        className="h-8 w-[6.5rem] shrink-0 px-2 text-xs"
+                      >
+                        <option value="">Definir…</option>
+                        {ORDEM_PRIORIDADE.map((p) => <option key={p} value={p}>{ROTULO_PRIORIDADE_CURTO[p]}</option>)}
+                      </Selecao>
                     </li>
                   );
                 })}

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 're
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ArrowLeft, ArrowDown, ArrowUp, Plus, Trash2, Info } from 'lucide-react';
-import { db, type Fonte, type StatusLeitura } from '../../../data/db.ts';
+import { db, type Fonte, type Prioridade, type StatusLeitura } from '../../../data/db.ts';
 import { criarFonte, atualizarFonte, verificarDuplicatas, ErroDeValidacao, normalizarDadosFonte, type DadosFonte } from '../../../data/fontes.ts';
 import type { OrigemMetadados } from '../../../data/db.ts';
 import { PainelImportacao, type Assuntos, type Importacao, type Modo, type TextoLido } from './PainelImportacao.tsx';
@@ -20,7 +20,7 @@ import { AreaTexto, Botao, BotaoLink, CabecalhoPagina, Campo, Cartao, Entrada, S
 import { Confirmacao, useAvisos } from '../../componentes/dialogos.tsx';
 import { EditorTags } from '../../componentes/EditorTags.tsx';
 import { hojeIso } from '../../util.ts';
-import { ORDEM_STATUS, ROTULO_STATUS_LEITURA, autoresCurtos } from './rotulos.ts';
+import { ORDEM_PRIORIDADE, ORDEM_STATUS, ROTULO_PRIORIDADE_CURTO, ROTULO_STATUS_LEITURA, autoresCurtos } from './rotulos.ts';
 
 // Quais campos aparecem para cada tipo de publicação, e com qual rótulo.
 type CampoForm = Exclude<CampoBibliografico, 'titulo' | 'subtitulo' | 'autores' | 'ano' | 'doi' | 'url' | 'dataAcesso'>;
@@ -91,6 +91,7 @@ interface Estado {
   palavrasChave: string;
   tags: string[];
   statusLeitura: StatusLeitura;
+  prioridade: Prioridade | '';
   observacoes: string;
 }
 
@@ -117,6 +118,7 @@ function estadoInicial(f?: Fonte, nomesTags?: Map<string, string>): Estado {
     palavrasChave: f?.palavrasChave?.join('; ') ?? '',
     tags: (f?.tagIds ?? []).map((id) => nomesTags?.get(id)).filter((n): n is string => !!n),
     statusLeitura: f?.statusLeitura ?? 'nao_iniciado',
+    prioridade: f?.prioridade ?? '',
     observacoes: f?.observacoes ?? '',
   };
 }
@@ -271,6 +273,7 @@ export function FormularioFonte() {
       palavrasChave: est.palavrasChave.split(/[;\n]/),
       tagIds,
       statusLeitura: est.statusLeitura,
+      prioridade: est.prioridade || undefined,
       observacoes: est.observacoes,
       origemMetadados: origem ?? carregado?.fonte?.origemMetadados ?? 'manual',
       resumo: carregado?.fonte?.resumo,
@@ -329,7 +332,7 @@ export function FormularioFonte() {
     if (!e.palavrasChave.trim()) setOrigemPalavras(null);
     const hoje = hojeIso();
     const base = estadoInicial(undefined, nomesTags);
-    const novo: Estado = { ...base, tags: e.tags, statusLeitura: e.statusLeitura, observacoes: e.observacoes, palavrasChave: e.palavrasChave };
+    const novo: Estado = { ...base, tags: e.tags, statusLeitura: e.statusLeitura, prioridade: e.prioridade, observacoes: e.observacoes, palavrasChave: e.palavrasChave };
     if (resultado) {
       const r = resultado.dados;
       novo.tipo = r.tipo ?? 'artigo_periodico';
@@ -575,11 +578,19 @@ export function FormularioFonte() {
               )}
             </div>
           </Campo>
-          <Campo rotulo="Status de leitura" id="status" className="sm:w-56">
-            <Selecao id="status" value={e.statusLeitura} onChange={(ev) => set({ statusLeitura: ev.target.value as StatusLeitura })}>
-              {ORDEM_STATUS.map((s) => <option key={s} value={s}>{ROTULO_STATUS_LEITURA[s]}</option>)}
-            </Selecao>
-          </Campo>
+          <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:max-w-xl">
+            <Campo rotulo="Status de leitura" id="status">
+              <Selecao id="status" value={e.statusLeitura} onChange={(ev) => set({ statusLeitura: ev.target.value as StatusLeitura })}>
+                {ORDEM_STATUS.map((s) => <option key={s} value={s}>{ROTULO_STATUS_LEITURA[s]}</option>)}
+              </Selecao>
+            </Campo>
+            <Campo rotulo="Prioridade" id="prioridade" dica="O quanto esta fonte importa para o seu TCC. Ajuda a decidir o que ler primeiro.">
+              <Selecao id="prioridade" value={e.prioridade} onChange={(ev) => set({ prioridade: ev.target.value as Prioridade | '' })}>
+                <option value="">Sem prioridade</option>
+                {ORDEM_PRIORIDADE.map((p) => <option key={p} value={p}>{ROTULO_PRIORIDADE_CURTO[p]}</option>)}
+              </Selecao>
+            </Campo>
+          </div>
           <Campo rotulo="Observações gerais" id="obs">
             <AreaTexto id="obs" value={e.observacoes} onChange={(ev) => set({ observacoes: ev.target.value })} rows={3} />
           </Campo>

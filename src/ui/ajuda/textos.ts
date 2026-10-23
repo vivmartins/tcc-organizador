@@ -24,6 +24,7 @@ export const AJUDA: Record<Secao, TextoAjuda> = {
     paraQue: 'É onde ficam todos os textos que você usa no TCC: artigos, livros, teses, documentos e sites. Cada fonte guarda os dados necessários para a referência ABNT.',
     passos: [
       'Clique em “Cadastrar fonte”. Se tiver o DOI, o link do artigo ou o PDF, use “Preencher automaticamente”; senão, preencha o que souber.',
+      'Prioridade: marque cada fonte como alta, média ou baixa (no cadastro, na página da fonte ou direto na lista). Na Biblioteca, filtre por prioridade ou ordene “Por prioridade” (alta, média, baixa e, por último, as sem prioridade) para decidir o que ler antes; “Selecionar todas” marca só as fontes filtradas.',
       'PDF sem DOI: a plataforma lê da primeira página o título, a autoria, o ano e, quando estiverem escritos, o periódico, volume e páginas (em teses e TCCs, também a instituição, o local e o tipo do trabalho). Depois procura o mesmo título no Crossref e no OpenAlex; se achar, você decide se usa os dados do DOI. Confira cada campo antes de salvar.',
       'Dados importados vêm marcados como “a conferir”: compare com a publicação antes de usar a referência.',
       'Abra uma fonte para ver a referência ABNT pronta, conferir os dados e registrar o resumo do estudo.',

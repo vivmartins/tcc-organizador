@@ -1,5 +1,5 @@
 import type { Autor } from '../../../domain/tipos.ts';
-import type { StatusLeitura } from '../../../data/db.ts';
+import type { Prioridade, StatusLeitura } from '../../../data/db.ts';
 import { capitalizarSobrenome } from '../../../domain/abnt/citacao.ts';
 import { entradaDoAutor } from '../../../domain/abnt/nomes.ts';
 
@@ -18,6 +18,13 @@ export const TOM_STATUS_LEITURA: Record<StatusLeitura, 'neutro' | 'acao' | 'suce
 };
 
 export const ORDEM_STATUS: StatusLeitura[] = ['nao_iniciado', 'lendo', 'lido', 'revisado'];
+
+export const ROTULO_PRIORIDADE: Record<Prioridade, string> = { alta: 'Prioridade alta', media: 'Prioridade média', baixa: 'Prioridade baixa' };
+export const ROTULO_PRIORIDADE_CURTO: Record<Prioridade, string> = { alta: 'Alta', media: 'Média', baixa: 'Baixa' };
+export const TOM_PRIORIDADE: Record<Prioridade, 'perigo' | 'alerta' | 'neutro'> = { alta: 'perigo', media: 'alerta', baixa: 'neutro' };
+export const ORDEM_PRIORIDADE: Prioridade[] = ['alta', 'media', 'baixa'];
+/** Para ordenar: alta, média, baixa e, por último, as sem prioridade. */
+export const pesoPrioridade = (p?: Prioridade) => (p ? ORDEM_PRIORIDADE.indexOf(p) : ORDEM_PRIORIDADE.length);
 
 /** "Silva, Souza e Lima" / "Silva et al." para listas. */
 export function autoresCurtos(autores: Autor[] = []): string {

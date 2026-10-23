@@ -110,6 +110,10 @@ export async function atualizarResumo(id: string, resumo: ResumoEstudo): Promise
   await db.fontes.update(id, { resumo: limpo, atualizadoEm: agora() });
 }
 
+export async function atualizarPrioridade(id: string, prioridade: Fonte['prioridade'] | null): Promise<void> {
+  await db.fontes.update(id, { prioridade: prioridade ?? undefined, atualizadoEm: agora() });
+}
+
 export async function atualizarStatusLeitura(id: string, statusLeitura: Fonte['statusLeitura']): Promise<void> {
   await db.fontes.update(id, { statusLeitura, atualizadoEm: agora() });
 }
