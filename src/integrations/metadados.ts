@@ -24,6 +24,8 @@ export interface ResultadoImportacao {
   temas: string[];
   /** Resumo (abstract) do OpenAlex, quando disponível, para a auditoria. */
   resumo?: string;
+  /** O OpenAlex encontrou uma versão gratuita (acesso aberto) do texto completo. */
+  acessoAberto?: { url?: string };
 }
 
 export class ErroDeImportacao extends Error {}
@@ -214,6 +216,7 @@ interface ObraOpenAlex {
   abstract_inverted_index?: Record<string, number[]> | null;
   primary_topic?: TopicoOpenAlex | null;
   topics?: TopicoOpenAlex[] | null;
+  open_access?: { is_oa?: boolean | null; oa_url?: string | null } | null;
 }
 interface TopicoOpenAlex { display_name?: string | null; score?: number | null; subfield?: { display_name?: string | null } | null }
 
@@ -324,6 +327,8 @@ export async function buscarPorDoi(doiDigitado: string, buscar: Buscar = (u) => 
     Object.assign(resultado, assuntosOpenAlex(oa.value as ObraOpenAlex));
     const resumo = resumoDoIndiceInvertido((oa.value as ObraOpenAlex).abstract_inverted_index);
     if (resumo) resultado.resumo = resumo;
+    const aberto = (oa.value as ObraOpenAlex).open_access;
+    if (aberto?.is_oa) resultado.acessoAberto = { url: aberto.oa_url ?? undefined };
   }
   resultado.dados.doi = resultado.dados.doi ?? doi;
   return resultado;

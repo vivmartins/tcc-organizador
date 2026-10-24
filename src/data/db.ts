@@ -8,6 +8,8 @@ import Dexie, { type EntityTable } from 'dexie';
 import type { DadosBibliograficos, StatusCampo, CampoBibliografico } from '../domain/tipos.ts';
 
 export type StatusLeitura = 'nao_iniciado' | 'lendo' | 'lido' | 'revisado';
+/** Acesso ao texto completo: gratuito (acesso aberto) ou pago (assinatura, compra). */
+export type Acesso = 'gratuito' | 'pago';
 export type OrigemMetadados = 'manual' | 'crossref' | 'openalex' | 'url' | 'pdf';
 export type TipoFichamento = 'citacao_direta' | 'citacao_indireta' | 'resumo' | 'ideia' | 'dado_relevante';
 export type Prioridade = 'baixa' | 'media' | 'alta';
@@ -54,6 +56,8 @@ export interface Fonte extends DadosBibliograficos, Datas {
   statusLeitura: StatusLeitura;
   /** Quanto a fonte importa para o TCC (o que ler primeiro). Sem valor = ainda não definida. */
   prioridade?: Prioridade;
+  /** Sem valor = não informado. */
+  acesso?: Acesso;
   observacoes?: string;
   resumo: ResumoEstudo;
   origemMetadados: OrigemMetadados;

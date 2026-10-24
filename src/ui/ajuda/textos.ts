@@ -25,6 +25,7 @@ export const AJUDA: Record<Secao, TextoAjuda> = {
     passos: [
       'Clique em “Cadastrar fonte”. Se tiver o DOI, o link do artigo ou o PDF, use “Preencher automaticamente”; senão, preencha o que souber.',
       'Prioridade: marque cada fonte como alta, média ou baixa (no cadastro, na página da fonte ou direto na lista). Na Biblioteca, filtre por prioridade ou ordene “Por prioridade” (alta, média, baixa e, por último, as sem prioridade) para decidir o que ler antes; “Selecionar todas” marca só as fontes filtradas.',
+      'Acesso: indique se o texto completo é gratuito (acesso aberto) ou pago. Ao importar pelo DOI, se o OpenAlex encontrar uma versão gratuita, o campo já vem como “Gratuito” (confira). Na Biblioteca, filtre por acesso para ver, por exemplo, só os gratuitos.',
       'PDF sem DOI: a plataforma lê da primeira página o título, a autoria, o ano e, quando estiverem escritos, o periódico, volume e páginas (em teses e TCCs, também a instituição, o local e o tipo do trabalho). Depois procura o mesmo título no Crossref e no OpenAlex; se achar, você decide se usa os dados do DOI. Confira cada campo antes de salvar.',
       'Dados importados vêm marcados como “a conferir”: compare com a publicação antes de usar a referência.',
       'Abra uma fonte para ver a referência ABNT pronta, conferir os dados e registrar o resumo do estudo.',

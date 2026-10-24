@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 're
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ArrowLeft, ArrowDown, ArrowUp, Plus, Trash2, Info } from 'lucide-react';
-import { db, type Fonte, type Prioridade, type StatusLeitura } from '../../../data/db.ts';
+import { db, type Acesso, type Fonte, type Prioridade, type StatusLeitura } from '../../../data/db.ts';
 import { criarFonte, atualizarFonte, verificarDuplicatas, ErroDeValidacao, normalizarDadosFonte, type DadosFonte } from '../../../data/fontes.ts';
 import type { OrigemMetadados } from '../../../data/db.ts';
 import { PainelImportacao, type Assuntos, type Importacao, type Modo, type TextoLido } from './PainelImportacao.tsx';
@@ -20,7 +20,7 @@ import { AreaTexto, Botao, BotaoLink, CabecalhoPagina, Campo, Cartao, Entrada, S
 import { Confirmacao, useAvisos } from '../../componentes/dialogos.tsx';
 import { EditorTags } from '../../componentes/EditorTags.tsx';
 import { hojeIso } from '../../util.ts';
-import { ORDEM_PRIORIDADE, ORDEM_STATUS, ROTULO_PRIORIDADE_CURTO, ROTULO_STATUS_LEITURA, autoresCurtos } from './rotulos.ts';
+import { ORDEM_ACESSO, ROTULO_ACESSO, ORDEM_PRIORIDADE, ORDEM_STATUS, ROTULO_PRIORIDADE_CURTO, ROTULO_STATUS_LEITURA, autoresCurtos } from './rotulos.ts';
 
 // Quais campos aparecem para cada tipo de publicação, e com qual rótulo.
 type CampoForm = Exclude<CampoBibliografico, 'titulo' | 'subtitulo' | 'autores' | 'ano' | 'doi' | 'url' | 'dataAcesso'>;
@@ -92,6 +92,7 @@ interface Estado {
   tags: string[];
   statusLeitura: StatusLeitura;
   prioridade: Prioridade | '';
+  acesso: Acesso | '';
   observacoes: string;
 }
 
@@ -119,6 +120,7 @@ function estadoInicial(f?: Fonte, nomesTags?: Map<string, string>): Estado {
     tags: (f?.tagIds ?? []).map((id) => nomesTags?.get(id)).filter((n): n is string => !!n),
     statusLeitura: f?.statusLeitura ?? 'nao_iniciado',
     prioridade: f?.prioridade ?? '',
+    acesso: f?.acesso ?? '',
     observacoes: f?.observacoes ?? '',
   };
 }
@@ -239,6 +241,7 @@ export function FormularioFonte() {
   const [textoPdf, setTextoPdf] = useState<TextoLido | null>(null);
   const [guardarTextoPdf, setGuardarTextoPdf] = useState(true);
   const [resumoImportado, setResumoImportado] = useState<string | null>(null);
+  const [acessoAbertoUrl, setAcessoAbertoUrl] = useState<string | null>(null);
   const [erros, setErros] = useState<Record<string, string>>({});
   const [salvando, setSalvando] = useState(false);
   const [duplicatas, setDuplicatas] = useState<{ fonte: Fonte; motivo: string }[] | null>(null);
@@ -274,6 +277,7 @@ export function FormularioFonte() {
       tagIds,
       statusLeitura: est.statusLeitura,
       prioridade: est.prioridade || undefined,
+      acesso: est.acesso || undefined,
       observacoes: est.observacoes,
       origemMetadados: origem ?? carregado?.fonte?.origemMetadados ?? 'manual',
       resumo: carregado?.fonte?.resumo,
@@ -328,11 +332,12 @@ export function FormularioFonte() {
     if (!e) return;
     if (complementar && resultado) return complementarComPdf(resultado);
     setResumoImportado(resultado?.resumo ?? null);
+    setAcessoAbertoUrl(resultado?.acessoAberto?.url ?? null);
     setTemasExternos([]);
     if (!e.palavrasChave.trim()) setOrigemPalavras(null);
     const hoje = hojeIso();
     const base = estadoInicial(undefined, nomesTags);
-    const novo: Estado = { ...base, tags: e.tags, statusLeitura: e.statusLeitura, prioridade: e.prioridade, observacoes: e.observacoes, palavrasChave: e.palavrasChave };
+    const novo: Estado = { ...base, tags: e.tags, statusLeitura: e.statusLeitura, prioridade: e.prioridade, acesso: e.acesso || (resultado?.acessoAberto ? 'gratuito' : ''), observacoes: e.observacoes, palavrasChave: e.palavrasChave };
     if (resultado) {
       const r = resultado.dados;
       novo.tipo = r.tipo ?? 'artigo_periodico';
@@ -578,7 +583,7 @@ export function FormularioFonte() {
               )}
             </div>
           </Campo>
-          <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:max-w-xl">
+          <div className="grid gap-4 sm:grid-cols-3 sm:gap-6 lg:max-w-3xl">
             <Campo rotulo="Status de leitura" id="status">
               <Selecao id="status" value={e.statusLeitura} onChange={(ev) => set({ statusLeitura: ev.target.value as StatusLeitura })}>
                 {ORDEM_STATUS.map((s) => <option key={s} value={s}>{ROTULO_STATUS_LEITURA[s]}</option>)}
@@ -588,6 +593,12 @@ export function FormularioFonte() {
               <Selecao id="prioridade" value={e.prioridade} onChange={(ev) => set({ prioridade: ev.target.value as Prioridade | '' })}>
                 <option value="">Sem prioridade</option>
                 {ORDEM_PRIORIDADE.map((p) => <option key={p} value={p}>{ROTULO_PRIORIDADE_CURTO[p]}</option>)}
+              </Selecao>
+            </Campo>
+            <Campo rotulo="Acesso ao texto completo" id="acesso" dica={acessoAbertoUrl && e.acesso === 'gratuito' ? <>O OpenAlex indica uma versão gratuita: <a href={acessoAbertoUrl} target="_blank" rel="noreferrer" className="text-acao-700 underline">abrir</a>.</> : 'Gratuito (acesso aberto) ou pago (assinatura ou compra).'}>
+              <Selecao id="acesso" value={e.acesso} onChange={(ev) => set({ acesso: ev.target.value as Acesso | '' })}>
+                <option value="">Não informado</option>
+                {ORDEM_ACESSO.map((a) => <option key={a} value={a}>{ROTULO_ACESSO[a]}</option>)}
               </Selecao>
             </Campo>
           </div>

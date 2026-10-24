@@ -2,8 +2,8 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { ArrowLeft, Pencil, Trash2, Copy, CheckCircle2, AlertCircle, CircleDashed, ExternalLink, Check } from 'lucide-react';
-import { db, type Fonte, type Prioridade, type ResumoEstudo, type StatusLeitura } from '../../../data/db.ts';
-import { atualizarPrioridade, atualizarResumo, atualizarStatusLeitura, definirNumeroVancouver, excluirFonte, marcarCampos } from '../../../data/fontes.ts';
+import { db, type Acesso, type Fonte, type Prioridade, type ResumoEstudo, type StatusLeitura } from '../../../data/db.ts';
+import { atualizarAcesso, atualizarPrioridade, atualizarResumo, atualizarStatusLeitura, definirNumeroVancouver, excluirFonte, marcarCampos } from '../../../data/fontes.ts';
 import { limparDoi, type Pendencia } from '../../../domain/abnt/referencia.ts';
 import { type EstiloCitacao } from '../../../domain/abnt/citacao.ts';
 import { citacaoDaFonte, formatoDoProjeto, referenciaDaFonte, type FormatoReferencias } from '../../../domain/formato.ts';
@@ -13,7 +13,7 @@ import { useProjetoObrigatorio } from '../../projetoAtivo.tsx';
 import { AreaTexto, Botao, BotaoLink, Cartao, Campo, Entrada, Selecao, Selo, cx } from '../../componentes/base.tsx';
 import { Confirmacao, useAvisos } from '../../componentes/dialogos.tsx';
 import { copiar, dataCurta, plural } from '../../util.ts';
-import { ORDEM_PRIORIDADE, ORDEM_STATUS, ROTULO_PRIORIDADE, ROTULO_STATUS_LEITURA } from './rotulos.ts';
+import { ORDEM_ACESSO, ROTULO_ACESSO_LONGO, ORDEM_PRIORIDADE, ORDEM_STATUS, ROTULO_PRIORIDADE, ROTULO_STATUS_LEITURA } from './rotulos.ts';
 import { formatarDataAcesso } from '../../../domain/abnt/referencia.ts';
 import { ListaDeFichas } from '../fichamentos/Fichamentos.tsx';
 import { TextoDaFonte } from './TextoDaFonte.tsx';
@@ -327,6 +327,10 @@ export function PaginaFonte() {
           <Selecao aria-label="Prioridade" value={fonte.prioridade ?? ''} onChange={async (e) => { await atualizarPrioridade(fonte.id, (e.target.value || null) as Prioridade | null); avisar('sucesso', 'Prioridade atualizada.'); }} className="w-44">
             <option value="">Sem prioridade</option>
             {ORDEM_PRIORIDADE.map((p) => <option key={p} value={p}>{ROTULO_PRIORIDADE[p]}</option>)}
+          </Selecao>
+          <Selecao aria-label="Acesso ao texto completo" value={fonte.acesso ?? ''} onChange={async (e) => { await atualizarAcesso(fonte.id, (e.target.value || null) as Acesso | null); avisar('sucesso', 'Acesso atualizado.'); }} className="w-44">
+            <option value="">Acesso não informado</option>
+            {ORDEM_ACESSO.map((a) => <option key={a} value={a}>{ROTULO_ACESSO_LONGO[a]}</option>)}
           </Selecao>
           <BotaoLink para={`/biblioteca/${fonte.id}/editar`}><Pencil size={14} /> Editar</BotaoLink>
           <Botao variante="perigo" onClick={() => setExcluindo(true)} aria-label="Excluir fonte"><Trash2 size={14} /></Botao>

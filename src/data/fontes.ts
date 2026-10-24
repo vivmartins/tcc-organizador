@@ -114,6 +114,10 @@ export async function atualizarPrioridade(id: string, prioridade: Fonte['priorid
   await db.fontes.update(id, { prioridade: prioridade ?? undefined, atualizadoEm: agora() });
 }
 
+export async function atualizarAcesso(id: string, acesso: Fonte['acesso'] | null): Promise<void> {
+  await db.fontes.update(id, { acesso: acesso ?? undefined, atualizadoEm: agora() });
+}
+
 export async function atualizarStatusLeitura(id: string, statusLeitura: Fonte['statusLeitura']): Promise<void> {
   await db.fontes.update(id, { statusLeitura, atualizadoEm: agora() });
 }
