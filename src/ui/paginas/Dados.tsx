@@ -10,6 +10,7 @@ import {
 import { dataCurta } from '../util.ts';
 import { AjudaSecao } from '../ajuda/AjudaSecao.tsx';
 import { CartaoBackupAutomatico } from './CartaoBackupAutomatico.tsx';
+import { CartaoSincronizacao } from './CartaoSincronizacao.tsx';
 
 function baixar(nome: string, conteudo: string) {
   const url = URL.createObjectURL(new Blob([conteudo], { type: 'application/json' }));
@@ -57,10 +58,11 @@ export function Dados() {
 
   return (
     <div className="max-w-3xl">
-      <CabecalhoPagina titulo="Backup e dados" descricao="Seus dados ficam só neste navegador, neste computador. O backup é a sua cópia de segurança." />
+      <CabecalhoPagina titulo="Backup e dados" descricao="Seus dados ficam neste navegador e, se você ligar a sincronização, no seu Google Drive. O backup é a sua cópia de segurança." />
       <AjudaSecao secao="dados" />
 
       <div className="flex flex-col gap-4">
+        <CartaoSincronizacao />
         <Cartao className="p-5 sm:p-6">
           <h2 className="flex items-center gap-2 text-sm font-semibold"><Download size={16} className="text-acao-600" /> Fazer backup</h2>
           <p className="mt-1.5 text-sm leading-relaxed text-cinza-600">

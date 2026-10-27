@@ -112,6 +112,12 @@ export async function restaurarBackup(arquivo: ArquivoBackup): Promise<void> {
     }
     const primeiro = arquivo.dados.projetos[0] as { id?: string } | undefined;
     await db.config.put({ chave: 'projetoAtivoId', valor: primeiro?.id ?? null });
+    // Sincronização ligada: o Drive passa a ser igual ao backup restaurado (senão o que foi
+    // removido pelo backup voltaria do Drive na próxima sincronização).
+    if (await db.config.get('sincronizacao.conta')) {
+      await db.config.put({ chave: 'sincronizacao.substituirNoDrive', valor: true });
+      await db.config.delete('sincronizacao.excluidos');
+    }
   });
 }
 

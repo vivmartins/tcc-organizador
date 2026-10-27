@@ -9,6 +9,7 @@ import { useProjeto } from '../projetoAtivo.tsx';
 import { definirProjetoAtivo } from '../../data/projetos.ts';
 import { AvisoBackup } from './AvisoBackup.tsx';
 import { AvisoVersaoNova } from './AvisoVersaoNova.tsx';
+import { AvisoSincronizacao, StatusSincronizacao } from '../paginas/CartaoSincronizacao.tsx';
 import { AvisoExemplo } from '../paginas/Inicio.tsx';
 
 const SECOES = [
@@ -122,6 +123,7 @@ function Navegacao({ aoNavegar }: { aoNavegar?: () => void }) {
       </nav>
       <div className="mt-auto flex flex-col gap-2">
         <AvisoBackup />
+        <StatusSincronizacao />
         <NavLink to="/como-funciona" className={item} onClick={aoNavegar}>
           <CircleHelp size={17} strokeWidth={1.8} />
           Como funciona
@@ -168,6 +170,7 @@ export function Layout() {
 
       <main className="mx-auto w-full max-w-[1400px] px-4 py-6 sm:px-8 sm:py-8">
         <AvisoVersaoNova />
+        <AvisoSincronizacao />
         <AvisoExemplo />
         <Outlet />
       </main>

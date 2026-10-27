@@ -93,11 +93,12 @@ export const AJUDA: Record<Secao, TextoAjuda> = {
   },
   dados: {
     titulo: 'Por que fazer backup',
-    paraQue: 'Seus dados ficam guardados só neste navegador, neste computador. Nada vai para a internet. Por isso, o backup é a sua cópia de segurança.',
+    paraQue: 'Seus dados ficam guardados neste navegador. Se você ligar a sincronização, eles também vão para um espaço reservado no seu próprio Google Drive. O backup é a sua cópia de segurança.',
     passos: [
+      'Para usar no computador e no celular, toque em “Entrar com o Google” nos dois aparelhos: os dados ficam iguais sozinhos. Só esta plataforma enxerga esse espaço do seu Drive, e ela não vê seus outros arquivos.',
       'Clique em “Baixar backup agora” e guarde o arquivo no Google Drive, num pendrive ou no seu e-mail.',
       'Faça backup com frequência, por exemplo uma vez por semana. O app avisa quando estiver atrasado.',
-      'Para usar em outro computador, abra o app lá e use “Restaurar backup” com o arquivo.',
+      'Sem a sincronização, para usar em outro aparelho, abra a plataforma lá e use “Restaurar backup” com o arquivo.',
       'No Chrome ou no Edge do computador, ligue o “Backup automático” e salve o arquivo na pasta do Google Drive: o app atualiza a cópia sozinho a cada alteração.',
     ],
   },
